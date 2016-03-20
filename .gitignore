@@ -1,0 +1,10 @@
+/tool/*.exe
+*.rar
+*.bat
+
+*.json
+OneQuick.User.ahk
+
+
+/*.exe
+!OneQuick Launcher.exe

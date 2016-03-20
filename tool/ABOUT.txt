@@ -1,0 +1,7 @@
+﻿/tool 文件夹可以放一些小工具来由OneQuick调用
+
+比如display.exe (http://noeld.com/programs.asp#Display)可以旋转屏幕，
+将display.exe复制到tool文件夹中，就可以在OneQuick中调用Sys.Screen.RotateCW()和Sys.Screen.RotateCCW() 将屏幕顺时针或逆时针旋转。
+
+psshutdown.exe (https://technet.microsoft.com/en-us/sysinternals/psshutdown.aspx)可以使计算机待机，
+将psshutdown.exe复制到tool文件夹中，可以在OneQuick中调用Sys.Power.Standby() 使计算机待机。
