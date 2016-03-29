@@ -1,10 +1,12 @@
 /tool/*.exe
+
+/archive
 *.rar
+*.zip
 *.bat
 
 *.json
 OneQuick.User.ahk
-
 
 /*.exe
 !OneQuick Launcher.exe

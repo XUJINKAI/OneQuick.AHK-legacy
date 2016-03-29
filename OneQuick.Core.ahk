@@ -1,6 +1,6 @@
 ﻿/*
 @author: XJK
-@github: https://github.com/XUJINKAI
+@github: https://github.com/XUJINKAI/OneQuick
 请保留作者信息。please retain author information.
 
 此文件是OneQuick的核心，定义了几个主要功能的class，
@@ -295,7 +295,7 @@ OneQuick.SetAutorun(!OneQuick.CheckAutorun())
 Return
 
 Sub_OneQuick_About:
-run("https://github.com/XUJINKAI/OneQuick#onequick")
+run("https://github.com/XUJINKAI/OneQuick")
 Return
 
 Sub_OneQuick_Reload:
