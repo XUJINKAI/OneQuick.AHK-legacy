@@ -223,7 +223,7 @@ class OneQuick
 
 	Command_run()
 	{
-		InputBox, cmd, OneQuick Command Run, input command:
+		InputBox, cmd, OneQuick Command Run, input command:, , 330, 130
 		if !ErrorLevel
 			run(cmd)
 	}
