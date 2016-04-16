@@ -1,4 +1,4 @@
-﻿OneQuick
+OneQuick
 ========================
 OneQuick 是一款快捷键工具，让你操作电脑事半功倍。
 
@@ -7,8 +7,8 @@ OneQuick 是一款快捷键工具，让你操作电脑事半功倍。
 **窗口操作**，对任意窗口置顶，隐藏，调整透明度，查看程序信息或打开程序目录。  
 还有鼠标位置、屏幕取色、编辑HOSTS并刷新DNS缓存等许多快捷功能。  
 
-同时，OneQuick作为autohotkey脚本，class在一个独立文件中，所以也可当作一个库来使用。  
-OneQuick对托盘、配置文件、网盘同步等场景做了许多加强。  
+同时，OneQuick的核心定义在一个独立文件中，引用OneQuick.Core.ahk文件，即是一个AHK增强库。  
+OneQuick对托盘、配置文件读写、网盘同步等场景做了许多加强。  
 
 OneQuick is an Autohotkey script, it is both a convenient tool and an ahk library.  
 It provides clipboard manager, screen border operation, window operation, quick menu, etc.  
@@ -92,6 +92,13 @@ ctrl + shift + alt + R：重新启动OneQuick
 右击OneQuick托盘图标可打开OneQuick菜单，设置自启动，打开脚本目录，或AHK帮助文件等；  
 在OneQuick.Core.ahk文件中，定义了类似于计划任务的模块（class Schedule），用户可自行利用；  
 在OneQuick.Core.ahk文件中，定义了更多常用系统操作（class Sys），用户可自行查看。
+
+
+
+高级功能
+------------------------
+- 增改默认功能都可以在OneQuick.ahk 中完成。
+- [扩展自定义菜单（右键右上角菜单、win+z菜单）](https://github.com/XUJINKAI/OneQuick/issues/2)
 
 
 
