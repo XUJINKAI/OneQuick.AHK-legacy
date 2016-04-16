@@ -130,10 +130,11 @@ OneQuick可以“执行”【"av"+数字】格式的字串。比如，按ctrl + 
 
 
 
-关于作者
+关于
 ------------------------
-微博: <a href="http://weibo.com/johnkale" target="_blank">http://weibo.com/johnkale</a>  
-博客：<a href="http://xujinkai.info/" target="_blank">http://xujinkai.info/</a>  
+博客：http://xujinkai.info/  
+微博链接: http://weibo.com/1657846235/DnitJ1ONc  
+知乎相关回答：https://www.zhihu.com/question/36847530/answer/92868539  
 
 
 版权 · License
