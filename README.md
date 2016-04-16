@@ -23,7 +23,7 @@ Here for details: [DOCUMENT.md][DOCUMENT]
 OneQuick 脚本本身不需要安装，但执行脚本需要 AHK 支持，你可以到这里
 <a href="https://autohotkey.com/" target="_blank">https://autohotkey.com/</a> 下载AHK，安装AHK后，双击 **OneQuick Launcher.exe** 即可运行。
 
-由于系统限制，AHK 无法对任务管理器等管理员权限运行的程序执行窗口操作，若有这方面需要，可以下载 <a href="https://autohotkey.com/board/topic/70449-enable-interaction-with-administrative-programs/" target="_blank">EnableUIAccess</a>，解压后，运行 EnableUIAccess.ahk，定位到AHK的安装目录，依次选择 autohotkey.exe 等几个exe文件即可。
+由于系统限制，AHK 无法对任务管理器等管理员权限运行的程序执行窗口操作，若有这方面需要，可以下载 <a href="https://autohotkey.com/board/topic/70449-enable-interaction-with-administrative-programs/" target="_blank">EnableUIAccess</a>，解压后，运行 EnableUIAccess.ahk，定位到AHK的安装目录，选择 autohotkey.exe 并覆盖保存即可。
 
 
 

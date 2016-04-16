@@ -28,8 +28,9 @@ sets search list, %s in each string will be replaced by the content
 */
 xClipboard.SetHotkey("^+x", "^+c", "^+v")
 xClipboard.SetBrowserList([["1","Default",""],["2","Edge","microsoft-edge:"],["3","Chrome","chrome.exe"],["4","IE","iexplore.exe"]])
-xClipboard.SetSearchList([["b","百度","http://www.baidu.com/s?wd=%s"]
-	,["g","Google","https://www.google.com/search?q=%s"]
+xClipboard.SetSearchList([["g","Google","https://www.google.com/search?q=%s"]
+	,["b","百度","http://www.baidu.com/s?wd=%s"]
+	,["","百度local","http://www.baidu.com/s?wd=%s&tn=baidulocal"]
 	,["w","微博","http://s.weibo.com/weibo/%s"]
 	,["z","知乎","http://www.zhihu.com/search?q=%s"]
 	,["k","果壳","http://www.guokr.com/search/all/?wd=%s"]

@@ -27,23 +27,17 @@ Else
 	}
 	catch e
 	{
-		if FileExist("AutoHotkeyU64.exe")
-		{
-			try
-			{
-				run AutoHotkeyU64.exe %program_name%.ahk
-				ExitApp
-			}
-			catch
-			{ }
-		}
-		if FileExist("AutoHotkeyU32.exe")
-			run AutoHotkeyU32.exe %program_name%.ahk
-		else if FileExist("AutoHotkeyA32.exe")
-			run AutoHotkeyA32.exe %program_name%.ahk
-		else
-			msgbox, can't find AutoHotkey.exe to launch
+		Gosub, ask_open_ahk_org
+		ExitApp
 	}
 }
+ExitApp
 
+ask_open_ahk_org:
+msg = Please install Autohotkey first. `nClick YES to open autohotkey.org
+msgbox, 0x4, %program_name%, % msg
+ifmsgbox Yes
+{
+	run, http://autohotkey.org
+}
 ExitApp
