@@ -97,8 +97,7 @@ ctrl + shift + alt + R：重新启动OneQuick
 
 高级功能
 ------------------------
-- 增改默认功能都可以在OneQuick.ahk 中完成。
-- [扩展自定义菜单（右键右上角菜单、win+z菜单）](https://github.com/XUJINKAI/OneQuick/issues/2)
+[文档，示例请参考这里](https://github.com/XUJINKAI/OneQuick/issues?utf8=%E2%9C%93&q=is%3Aissue+label%3Adocument)
 
 
 
