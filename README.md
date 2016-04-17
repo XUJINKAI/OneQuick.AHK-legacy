@@ -18,6 +18,10 @@ Here for details: [DOCUMENT.md][DOCUMENT]
 [DOCUMENT]:https://github.com/XUJINKAI/OneQuick/blob/master/DOCUMENT.md
 
 
+简单的问卷调查，让我更好了解你的需求：https://www.wenjuan.com/s/R7fyEv/
+
+
+
 安装 · Install
 ------------------------
 OneQuick 脚本本身不需要安装，但执行脚本需要 AHK 支持，你可以到这里
