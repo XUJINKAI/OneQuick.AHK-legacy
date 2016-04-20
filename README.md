@@ -85,9 +85,7 @@ Q&A
 OneQuick开始于2014年初，最初只是自用，经历过几次大的重写，断断续续，到2015年左右成型。用到现在又快一年了，在这一年中，我发现我已经离不开OneQuick了，当临时使用别人的电脑时，会因为没有相关的快捷设置而无所适从。将OneQuick发布出来，也是作为自己研究生生涯的纪念。
 
 #### 让OneQuick对管理员权限程序（任务管理器等）起作用  
-1. 若没有安装AHK，需要到[这里][AHK]下载安装（内置在AHK文件夹中的不行）  
-2. 下载 <a href="https://autohotkey.com/board/topic/70449-enable-interaction-with-administrative-programs/" target="_blank">EnableUIAccess</a>，解压后，运行 EnableUIAccess.ahk，定位到AHK的安装目录（如C:\Program Files\AutoHotkey），选择 autohotkey.exe 并覆盖保存即可。
-3. 重启OneQuick。  
+运行AHK目录下的EnableUIAccess2AHK.ahk 即可.  
 
 #### 修改 OneQuick 默认的文本编辑器？  
 参考[这里][ext_default_editor] 

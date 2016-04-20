@@ -1,17 +1,20 @@
 ﻿/*
-@author: XJK
-@github: https://github.com/XUJINKAI/OneQuick
-请保留作者信息。please retain author information.
+	@author: XJK
+	@github: https://github.com/XUJINKAI/OneQuick
+	请保留作者信息。please retain author information.
 
-此文件是OneQuick的核心，定义了几个主要功能的class，
-此文件的内容不会直接执行，需要OneQuick.ahk引用并依需要的功能启动，
-所以一般无需修改此文件，也欢迎上github提交完善此项目。
+	此文件是OneQuick的核心，定义了几个主要功能的class，
+	此文件的内容不会直接执行，需要OneQuick.ahk引用并依需要的功能启动，
+	所以一般无需修改此文件，也欢迎上github提交完善此项目。
 
-This is main class file of OneQuick, you need NOT modify it generally.
-you can pull requests in github for this project.
+	This is main class file of OneQuick, you need NOT modify it generally.
+	you can pull requests in github for this project.
 */
 
 ; with this label, you can include this file on top of the file
+if(A_ScriptName=="OneQuick.Core.ahk") {
+	ExitApp
+}
 Goto, SUB_ONEQUICK_FILE_END_LABEL
 #Persistent
 #SingleInstance force
@@ -38,6 +41,7 @@ class OneQuick
 	static _DEBUG_ := false
 	static _DEBUG_LOAD_DEFAULT_YAML_ := false
 	; dir
+	static Default_lang := "cn"
 	static _MAIN_WORKDIR := ""
 	static _JSON_DIR := "data/"
 	static _ICON_DIR := "icon/"
@@ -45,6 +49,7 @@ class OneQuick
 	static _SCRIPT_DIR := "script/"
 	; file
 	static Ext_ahk_file := OneQuick._MAIN_WORKDIR "OneQuick.Ext.ahk"
+	static version_yaml_file := OneQuick._MAIN_WORKDIR OneQuick._SCRIPT_DIR "version.yaml"
 	static setting_yaml_file := OneQuick._MAIN_WORKDIR "OneQuick.setting.yaml"
 	static setting_yaml_default_file := OneQuick._MAIN_WORKDIR OneQuick._SCRIPT_DIR "OneQuick.setting.default.yaml"
 	static JsonName := OneQuick._MAIN_WORKDIR OneQuick._JSON_DIR "OneQuick.Data." A_ComputerName ".json"
@@ -58,6 +63,8 @@ class OneQuick
 
 	; setting object
 	static settingObj =
+	; version object
+	static versionObj =
 	; running data cache
 	static Config := {}
 	; callback
@@ -80,6 +87,8 @@ class OneQuick
 		CoordMode, Menu, Screen
 		; setting
 		this.LoadSettingYaml()
+		; load version yaml file
+		this.versionObj := Yaml(this.version_yaml_file)
 		; program running cache/variable
 		this.LoadConfig()
 		; register onexit sub
@@ -93,9 +102,7 @@ class OneQuick
 		}
 
 		; version
-		version := this.Setting("_onequick_.version")
-		version_build := this.Setting("_onequick_.version-build")
-		version_str := " v" version "." version_build
+		version_str := " v" this.versionObj["version"] "." this.versionObj["build"]
 		; Menu Tray
 		this.SetIcon(this.icon_default)
 		if(not this.tray_standard_menu)
@@ -114,7 +121,7 @@ class OneQuick
 		Menu, Tray, Add, % lang("Open AutoHotkey.exe Folder"), Sub_OneQuick_EXE_Loc
 		Menu, Tray, Add, % lang("AutoHotKey Help"), Sub_OneQuick_AHKHelp
 		Menu, Tray, Add
-		Menu, Tray, Add, % lang("Open Script Folder"), Sub_OneQuick_Script_Loc
+		Menu, Tray, Add, % lang("Open OneQuick Folder"), Sub_OneQuick_WorkDir
 		Menu, Tray, Add, % lang("Edit Ext.ahk"), Sub_OneQuick_EditExtFile
 		Menu, Tray, Add, % lang("Edit Setting.yaml"), Sub_OneQuick_EditSetting
 
@@ -158,26 +165,64 @@ class OneQuick
 		this.Check_update()
 	}
 
+	_Debug_version()
+	{
+		; run("onequick._Debug_version")
+		fake_type := 2
+		if(fake_type==1) {
+			fake_version := {version: "1.2.3", build: "999", description: "debug version.`nshow line2"}
+			this._update_version_info(this.versionObj, fake_version)
+		}
+		else if (fake_type==2) {
+			fake_version := {version: "0.0.0", build: "0", description: "debug version.`nthis will never show."}
+			this._update_version_info(fake_version, this.versionObj)
+		}
+	}
+
 	Check_update()
 	{
-		this_version := this.Setting("_onequick_.version")
-		this_build := this.Setting("_onequick_.version-build")
-		; 
 		oHttp := ComObjCreate("WinHttp.Winhttprequest.5.1")
 		oHttp.open("GET", this.remote_setting_yaml)
 		oHttp.send()
-		remoteSettingObj := Yaml(oHttp.responseText, 0)
-		remote_version := remoteSettingObj["_onequick_"]["version"]
-		remote_build := remoteSettingObj["_onequick_"]["version-build"]
-		;
+		remoteVersionObj := Yaml(oHttp.responseText, 0)
+		; 
+		this._update_version_info(this.versionObj, remoteVersionObj)
+	}
+
+	_update_version_info(thisVerObj, remoteVerObj)
+	{
+		this_version := thisVerObj["version"]
+		this_build := thisVerObj["build"]
+		; skip build
+		skip_build := this.Setting("_onequick_.skip_version")
+		if(skip_build > this_build) {
+			this_build := skip_build
+		}
+		; remote version
+		remote_version := remoteVerObj["version"]
+		remote_build := remoteVerObj["build"]
+		remote_desc := remoteVerObj["description"]
+		StringReplace, remote_desc, % remote_desc, <br>, `n, All
 		if(this_build < remote_build)
 		{
+			update_version_str := "v" this_version "." this_build " -> v" remote_version "." remote_build
+			update_title := "OneQuick Update!"
 			update_msg := lang("update_msg", "OneQuick has a new version, open browser?")
-			update_title := "OneQuick v" this_version " -> v" remote_version
+			update_msg .= "`n" update_version_str
+			update_msg .= "`n`n" lang("update_desc", "update log:")
+			update_msg .= "`n" remote_desc
 			MsgBox, 0x44, % update_title, % update_msg
 			IfMsgBox, Yes
 			{
 				run(this.remote_release)
+			}
+			else {
+				update_skip_version := lang("update_skip", "skip this version?") "`n" update_version_str
+				MsgBox, 0x124, % update_title, % update_skip_version
+				IfMsgBox, Yes
+				{
+					this.SetSetting("_onequick_.skip_version", remote_build)
+				}
 			}
 		}
 	}
@@ -448,7 +493,8 @@ Reload
 Return
 
 Sub_OneQuick_Exit:
-msgbox, 0x40034, % OneQuick.ProgramName, Sure to Exit?
+exit_msg := lang("exit_msg", "Sure to Exit?")
+msgbox, 0x40034, % OneQuick.ProgramName, % exit_msg
 IfMsgBox Yes
 	ExitApp
 Return
@@ -471,8 +517,8 @@ splitpath, a_ahkpath, , dir
 run(dir)
 Return
 
-Sub_OneQuick_Script_Loc:
-run(A_ScriptDir)
+Sub_OneQuick_WorkDir:
+run(A_WorkingDir)
 Return
 
 Sub_OneQuick_EditAll:
@@ -521,7 +567,7 @@ lang(key, default="")
 {
 	if(default=="")
 		default := key
-	lang := OneQuick.Setting("_onequick_.lang", "cn")
+	lang := OneQuick.Setting("_onequick_.lang", OneQuick.Default_lang)
 	if(lang=="en") {
 		return % default
 	}

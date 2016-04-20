@@ -1,17 +1,20 @@
 ﻿/*
-@author: XJK
-@github: https://github.com/XUJINKAI
+	@author: XJK
+	@github: https://github.com/XUJINKAI
 
-OneQuick starts here, features config file
-OneQuick 配置、运行文件
+	OneQuick starts here, features config file
+	OneQuick 配置、运行文件
 */
 
 ; the following lines is necessary to initialize OneQuick class
 
+; set workdir always be ../
+SplitPath, A_ScriptDir, , workdir
+SetWorkingDir, %workdir%
+; include core file
 #Include, %A_ScriptDir%
 #Include, OneQuick.Core.ahk
 OneQuick.Ini()
-
 /*
 以下为剪贴板增强功能的定义
 定义了ctrl + shift + x/c/v 三个快捷键

@@ -1,12 +1,14 @@
 ﻿program_icon := "icon/1.ico"
 program_name := "OneQuick"
 script_folder := "script/"
-backup_AHK_folder := A_ScriptDir "\AHK\"
+AHK_installer := A_ScriptDir "\AHK\AutoHotkey_Install.exe"
+AHK_UIAccess := A_ScriptDir "\AHK\EnableUIAccess2AHK.ahk"
 #NoTrayIcon
+
+SetWorkingDir, %A_ScriptDir%
 
 if not A_IsCompiled
 {
-	SetWorkingDir, %A_ScriptDir%
 	splitpath, a_ahkpath, , ahk_dir
 	Ahk2Exe := ahk_dir "\Compiler\Ahk2Exe.exe"
 	u32bin := ahk_dir "\Compiler\Unicode 32-bit.bin"
@@ -23,31 +25,26 @@ if not A_IsCompiled
 }
 Else
 {
-	SetWorkingDir, %A_ScriptDir%
 	try
 	{
 		run AutoHotkey.exe %script_folder%%program_name%.ahk
 	}
 	catch e
 	{
-		try
-		{
-			run %backup_AHK_folder%AutoHotkey.exe %script_folder%%program_name%.ahk
-		}
-		catch e
-		{
-			Gosub, ask_open_ahk_org
-			ExitApp
-		}
+		Gosub, ahk_not_find
+		ExitApp
 	}
 }
 ExitApp
 
-ask_open_ahk_org:
-msg = Please install Autohotkey first. `nOpen autohotkey.org?`n`n请先安装Autohotkey.`n打开官网下载？
-msgbox, 0x4, %program_name%, % msg
-ifmsgbox Yes
-{
-	run, http://autohotkey.org
+ahk_not_find:
+msg = Please install Autohotkey first. `n`n需要先安装Autohotkey.
+msgbox, 0x0, %program_name%, % msg
+if(FileExist(AHK_installer)) {
+	RunWait, % AHK_installer,, UseErrorLevel
+	RunWait, % AHK_UIAccess,, UseErrorLevel
+}
+else {
+	run, http://autohotkey.com
 }
 ExitApp
