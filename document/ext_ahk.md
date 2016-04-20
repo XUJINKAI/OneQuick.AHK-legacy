@@ -1,4 +1,7 @@
-﻿在OneQuick.Ext.ahk文件中，你可以添加自己的ahk代码，利用OneQuick自带的函数，可以方便地扩展自己需要的功能。
+﻿扩展自己的AHK代码 (OneQuick.Ext.ahk)
+------------------------
+
+在OneQuick.Ext.ahk文件中，你可以添加自己的ahk代码，利用OneQuick自带的函数，可以方便地扩展自己需要的功能。
 
 第一次运行OneQuick会生成ext文件，并且自动包含一个以计算机名命名的class。
 ```

@@ -1,11 +1,8 @@
 OneQuick
 ========================
 OneQuick 是一款基于autohotkey的windows快捷工具。  
-独创的屏幕边缘操作、文本快速搜索功能；还有剪贴板历史纪录、窗口操作菜单等一系列实用功能，让你感受到操作windows的爽快。  
+独创的屏幕边缘操作、文本快速搜索功能；还有剪贴板历史纪录、窗口操作菜单等一系列实用功能，操作windows也能如此爽快。  
 OneQuick也为扩展代码留下了足够的空间，你可以基于OneQuick提供的大量函数开发自己的ahk脚本。
-
-_知乎相关回答：https://www.zhihu.com/question/36847530/answer/92868539_  
-_简单的问卷：https://www.wenjuan.com/s/R7fyEv/_  
 
 OneQuick is an Autohotkey script, it is both a convenient tool and an ahk library.  
 It provides clipboard manager, screen border operation, window operation, quick menu, etc.  
@@ -16,13 +13,13 @@ It's also a useful library to write your own ahk code.
 ------------------------
 OneQuick 不需要安装。  
 到<https://github.com/XUJINKAI/OneQuick/releases>下载最新的压缩包，解压执行**OneQuick Launcher.exe** 即可。  
-_ahk脚本的执行需要 AutoHotKey 支持，压缩包中已经内置了autohotkey.exe，你也可以到[这里](https://autohotkey.com/) 下载最新版本。_  
+_ahk脚本的执行需要 AutoHotKey 支持，压缩包中已经内置了autohotkey.exe，你可以到[这里][AHK] 下载AutoHotKey的最新版本。_  
 
 关于配置与自定义：
 * 如果你想关闭或修改OneQuick的某项功能，可以修改**OneQuick.setting.yaml** 文件
 * 如果你想基于OneQuick 扩展自己的功能，可以将自己的代码添加到OneQuick.Ext.ahk 中
 
-使用文档请看[这里][DOCUMENT]
+相关文档[参考这里][DOCUMENT]
 
 
 默认功能
@@ -47,7 +44,7 @@ shift + 滚轮：屏幕亮度
 
 **右上角 · RT**  
 滚轮/单击滚轮：歌曲上一首/下一首/播放或暂停  
-右键：用户自定义菜单（[如何扩展菜单](https://github.com/XUJINKAI/OneQuick/issues/2)）  
+右键：用户自定义菜单（[如何扩展菜单][ext_rt_menu]）  
 
 **左边框 & 右边框 · L-R**  
 滚轮：翻页  
@@ -88,16 +85,16 @@ Q&A
 OneQuick开始于2014年初，最初只是自用，经历过几次大的重写，断断续续，到2015年左右成型。用到现在又快一年了，在这一年中，我发现我已经离不开OneQuick了，当临时使用别人的电脑时，会因为没有相关的快捷设置而无所适从。将OneQuick发布出来，也是作为自己研究生生涯的纪念。
 
 #### 让OneQuick对管理员权限程序（任务管理器等）起作用  
-1. 若没有安装AHK，需要到[这里](https://autohotkey.com/)下载安装（内置在AHK文件夹中的不行）  
+1. 若没有安装AHK，需要到[这里][AHK]下载安装（内置在AHK文件夹中的不行）  
 2. 下载 <a href="https://autohotkey.com/board/topic/70449-enable-interaction-with-administrative-programs/" target="_blank">EnableUIAccess</a>，解压后，运行 EnableUIAccess.ahk，定位到AHK的安装目录（如C:\Program Files\AutoHotkey），选择 autohotkey.exe 并覆盖保存即可。
 3. 重启OneQuick。  
 
+#### 修改 OneQuick 默认的文本编辑器？  
+参考[这里][ext_default_editor] 
+
 #### 执行b站av号是怎么回事？  
 OneQuick可以“执行”【"av"+数字】格式的字串。比如，按ctrl + shift + c 复制 **av314** 并弹出菜单后，再按空格即可打开相应视频。  
-这个功能定义在run() 函数中，也可以在run_user() 函数中扩展。
-
-#### 修改 OneQuick 默认的文本编辑器？  
-参考[这里](https://github.com/XUJINKAI/OneQuick/tree/master/document/ext_ahk.md#设置默认编辑器) 
+这个功能定义在run() 函数中，也可以在run_user() 中扩展。
 
 #### 剪贴板只能保存文本记录？  
 是的，OneQuick的剪贴板记录暂不支持图片等内容。不过，只要不利用OneQuick的剪贴板记录切换内容，系统剪贴板就不会受到影响。
@@ -106,7 +103,8 @@ OneQuick可以“执行”【"av"+数字】格式的字串。比如，按ctrl + 
 关于
 ------------------------
 博客：http://xujinkai.info/  
-微博：http://weibo.com/1657846235/DnitJ1ONc  
+相关微博：http://weibo.com/1657846235/DnitJ1ONc  
+知乎相关回答：https://www.zhihu.com/question/36847530/answer/92868539  
 
 
 版权 · License
@@ -116,7 +114,10 @@ OneQuick可以“执行”【"av"+数字】格式的字串。比如，按ctrl + 
 
 以GPL协议发布。  
 
+[AHK]: https://autohotkey.com/
 [DOCUMENT]: https://github.com/XUJINKAI/OneQuick/blob/master/document/index.md
+[ext_rt_menu]: https://github.com/XUJINKAI/OneQuick/blob/master/document/ext_ahk.md#扩展屏幕右上角右键菜单
+[ext_default_editor]: https://github.com/XUJINKAI/OneQuick/tree/master/document/ext_ahk.md#设置默认编辑器
 
 ------------------------
 ##### FROM OTHER PROJECT  

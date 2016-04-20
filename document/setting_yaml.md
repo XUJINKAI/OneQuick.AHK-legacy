@@ -1,4 +1,7 @@
-﻿在setting.yaml中，你可以快速配置OneQuick而不需写ahk代码。
+﻿修改setting.yaml
+--------------------
+
+在setting.yaml中，你可以快速配置OneQuick而不需写ahk代码。
 
 **注意**： setting.yaml文件中**不可以**出现任何中文字符，即使是中文标点符号；  
 OneQuick会随时读写此文件，所以里边的注释会消失。
