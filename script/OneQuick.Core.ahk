@@ -58,7 +58,7 @@ class OneQuick
 	static icon_pause := OneQuick._MAIN_WORKDIR OneQuick._ICON_DIR "4.ico"
 	static icon_suspend_pause := OneQuick._MAIN_WORKDIR OneQuick._ICON_DIR "3.ico"
 	; remote
-	static remote_setting_yaml := "http://raw.githubusercontent.com/XUJINKAI/OneQuick/master/script/OneQuick.setting.default.yaml"
+	static remote_version_yaml := "http://raw.githubusercontent.com/XUJINKAI/OneQuick/master/script/version.yaml"
 	static remote_release := "https://github.com/XUJINKAI/OneQuick/releases"
 
 	; setting object
@@ -167,7 +167,7 @@ class OneQuick
 
 	_Debug_version()
 	{
-		; run("onequick._Debug_version")
+		; onequick._Debug_version
 		fake_type := 2
 		if(fake_type==1) {
 			fake_version := {version: "1.2.3", build: "999", description: "debug version.`nshow line2"}
@@ -182,7 +182,7 @@ class OneQuick
 	Check_update()
 	{
 		oHttp := ComObjCreate("WinHttp.Winhttprequest.5.1")
-		oHttp.open("GET", this.remote_setting_yaml)
+		oHttp.open("GET", this.remote_version_yaml)
 		oHttp.send()
 		remoteVersionObj := Yaml(oHttp.responseText, 0)
 		; 
@@ -199,7 +199,7 @@ class OneQuick
 			this_build := skip_build
 		}
 		; remote version
-		remote_version := remoteVerObj["version"]
+		remote_version := remoteVerObj.version
 		remote_build := remoteVerObj["build"]
 		remote_desc := remoteVerObj["description"]
 		StringReplace, remote_desc, % remote_desc, <br>, `n, All

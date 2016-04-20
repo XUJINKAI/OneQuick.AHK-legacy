@@ -19,7 +19,9 @@ _ahk脚本的执行需要 AutoHotKey 支持，压缩包中已经内置了autohot
 * 如果你想关闭或修改OneQuick的某项功能，可以修改**OneQuick.setting.yaml** 文件
 * 如果你想基于OneQuick 扩展自己的功能，可以将自己的代码添加到OneQuick.Ext.ahk 中
 
-相关文档[参考这里][DOCUMENT]
+
+[相关文档][DOCUMENT]
+------------------------
 
 
 默认功能
@@ -113,9 +115,9 @@ OneQuick可以“执行”【"av"+数字】格式的字串。比如，按ctrl + 
 以GPL协议发布。  
 
 [AHK]: https://autohotkey.com/
-[DOCUMENT]: https://github.com/XUJINKAI/OneQuick/blob/master/document/index.md
-[ext_rt_menu]: https://github.com/XUJINKAI/OneQuick/blob/master/document/ext_ahk.md#扩展屏幕右上角右键菜单
-[ext_default_editor]: https://github.com/XUJINKAI/OneQuick/tree/master/document/ext_ahk.md#设置默认编辑器
+[DOCUMENT]: https://github.com/XUJINKAI/OneQuick/wiki
+[ext_rt_menu]: https://github.com/XUJINKAI/OneQuick/wiki/OneQuick.Ext.ahk#扩展屏幕右上角右键菜单
+[ext_default_editor]: https://github.com/XUJINKAI/OneQuick/wiki/OneQuick.Ext.ahk#设置默认编辑器
 
 ------------------------
 ##### FROM OTHER PROJECT  

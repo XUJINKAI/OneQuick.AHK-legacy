@@ -1,3 +1,4 @@
-﻿version: 0.1.1
+﻿name: onequick
+version: 0.1.1
 build: 12
 description: 优化安装流程，内置UIAccess; <br>现在可以跳过某个版本的更新。
