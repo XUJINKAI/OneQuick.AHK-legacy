@@ -1,12 +1,14 @@
-/tool/*.exe
-
+/AHK
 /archive
+/data
+/tool
+!/tool/ABOUT.txt
+
 *.rar
 *.zip
 *.bat
+*.exe
 
-*.json
-OneQuick.User.ahk
-
-/*.exe
-!OneQuick Launcher.exe
+OneQuick Launcher.exe
+OneQuick.Ext.ahk
+OneQuick.setting.yaml

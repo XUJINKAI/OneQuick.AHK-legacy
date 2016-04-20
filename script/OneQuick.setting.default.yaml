@@ -1,0 +1,56 @@
+_onequick_: 
+  autorun: 0
+  lang: cn
+  version: 0.1.0
+  version-build: 10
+app_enhance: 
+  chrome_scroll_tab: 1
+  notepad_ctrl_w_close: 1
+  sublime_file_folder: 1
+clipboard: 
+  browser: "Default, Edge, Chrome, IE"
+  browser_default: "chrome, default, edge, ie"
+  search: "google, baidu, baidu_local, weibo, zhihu, guokr, bilibili, acfun, youtube, netease_music, douban_movie, qr_code"
+  search_default: "Acfun, baidu, baidu_local, bilibili, douban_movie, google, guokr, netease_music, QR_code, weibo, Youtube, zhihu"
+  switch: 1
+hotkey: 
+  buildin: 
+    ctrl_alt_r: OneQuick.Command_run
+    ctrl_shift_alt_r: Sub_OneQuick_Reload
+    shift_wheeldown: "send {PgDn}"
+    shift_wheelup: "send {PgUp}"
+    win_n: notepad
+    win_rclick: WinMenu.Show
+    win_shift_l: Sys.Power.LockAndMonitoroff
+    win_t: sys.win.topmost
+    win_z: xmenu_show_great_menu
+  switch: 1
+screen-border: 
+  action: 
+    B: 
+      wheelclick: "send #{tab}"
+      wheeldown: "send ^#{right}"
+      wheelup: "send ^#{left}"
+    L-R: 
+      ctrl_shift_wheeldown: "send {end}"
+      ctrl_shift_wheelup: "send {home}"
+      shift_wheeldown: "send {pgdn}{pgdn}{pgdn}{pgdn}{pgdn}"
+      shift_wheelup: "send {pgup}{pgup}{pgup}{pgup}{pgup}"
+      wheeldown: "send {pgdn}"
+      wheelup: "send {pgup}"
+    LT: 
+      rclick: winmenu.show
+      shift_wheeldown: Sys.Screen.BrightnessDown
+      shift_wheelup: Sys.Screen.BrightnessUp
+      wheelclick: "send {volume_mute}"
+      wheeldown: "Send {volume_down}"
+      wheelup: "Send {volume_up}"
+    RT: 
+      rclick: xmenu_show_screen_rt_menu
+      wheelclick: "send {media_play_pause}"
+      wheeldown: "send {media_next}"
+      wheelup: "send {media_prev}"
+    T: 
+      wheeldown: Sys.Win.GotoNextTab
+      wheelup: Sys.Win.GotoPreTab
+  switch: 1
