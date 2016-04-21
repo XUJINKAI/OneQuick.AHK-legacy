@@ -41,7 +41,6 @@ class OneQuick
 	static _DEBUG_ := false
 	static _DEBUG_LOAD_DEFAULT_YAML_ := false
 	; dir
-	static Default_lang := "cn"
 	static _MAIN_WORKDIR := ""
 	static _JSON_DIR := "data/"
 	static _ICON_DIR := "icon/"
@@ -50,9 +49,10 @@ class OneQuick
 	; file
 	static Ext_ahk_file := OneQuick._MAIN_WORKDIR "OneQuick.Ext.ahk"
 	static version_yaml_file := OneQuick._MAIN_WORKDIR OneQuick._SCRIPT_DIR "version.yaml"
-	static setting_yaml_file := OneQuick._MAIN_WORKDIR "OneQuick.setting.yaml"
-	static setting_yaml_default_file := OneQuick._MAIN_WORKDIR OneQuick._SCRIPT_DIR "OneQuick.setting.default.yaml"
-	static JsonName := OneQuick._MAIN_WORKDIR OneQuick._JSON_DIR "OneQuick.Data." A_ComputerName ".json"
+	static feature_yaml_file := OneQuick._MAIN_WORKDIR "OneQuick.feature.yaml"
+	static feature_yaml_default_file := OneQuick._MAIN_WORKDIR OneQuick._SCRIPT_DIR "OneQuick.feature.default.yaml"
+	static config_file := OneQuick._MAIN_WORKDIR "config.ini"
+	static user_data_file := OneQuick._MAIN_WORKDIR OneQuick._JSON_DIR "OneQuick.Data." A_ComputerName ".json"
 	static icon_default := OneQuick._MAIN_WORKDIR OneQuick._ICON_DIR "1.ico"
 	static icon_suspend := OneQuick._MAIN_WORKDIR OneQuick._ICON_DIR "2.ico"
 	static icon_pause := OneQuick._MAIN_WORKDIR OneQuick._ICON_DIR "4.ico"
@@ -60,22 +60,24 @@ class OneQuick
 	; remote
 	static remote_version_yaml := "http://raw.githubusercontent.com/XUJINKAI/OneQuick/master/script/version.yaml"
 	static remote_release := "https://github.com/XUJINKAI/OneQuick/releases"
-
-	; setting object
-	static settingObj =
-	; version object
+	static remote_help := "https://github.com/XUJINKAI/OneQuick/wiki"
+	
+	;
+	; setting object (read only, for feature configuration)
+	static FeatureObj =
+	; version object (read only, for check update)
 	static versionObj =
-	; running data cache
-	static Config := {}
+	; running user data (e.g. clipboard history), read after run & write before exit
+	static UserData := {}
 	; callback
 	static OnExitCmd := []
 	static OnClipboardChangeCmd := []
 	static OnPauseCmd := []
 	static OnSuspendCmd := []
-	; setting
+	; static var
 	static ProgramName := "OneQuick"
-	static tray_standard_menu := False
-	static Editor = 
+	static Default_lang := "cn"
+	static Editor =
 	static Browser := ""
 
 	Ini()
@@ -86,29 +88,277 @@ class OneQuick
 		CoordMode, ToolTip, Screen
 		CoordMode, Menu, Screen
 		; setting
-		this.LoadSettingYaml()
+		this.LoadFeatureYaml()
 		; load version yaml file
 		this.versionObj := Yaml(this.version_yaml_file)
 		; program running cache/variable
-		this.LoadConfig()
+		this.LoadUserData()
+
 		; register onexit sub
 		OnExit, Sub_OnExit
+		; save user data when exit
+		this.OnExit("OneQuick.SaveUserData")
+		this.OnExit("OneQuick.CheckAutorun")
 
+		; %systmeroot% can't give to this.Editor directly
 		if(this.Editor = "")
 		{
-			; %systmeroot% can't give to this.Editor directly
 			defNotepad = %SystemRoot%\notepad.exe
 			this.Editor := defNotepad
 		}
 
-		; version
-		version_str := " v" this.versionObj["version"] "." this.versionObj["build"]
-		; Menu Tray
+		; initialize
 		this.SetIcon(this.icon_default)
-		if(not this.tray_standard_menu)
-			Menu, Tray, Nostandard
+		this.Update_Tray_Menu()
+		this.CheckAutorun()
+		; 检查更新
+		SetTimer, Sub_Auto_Check_update, -2000
+		; guide
+		this.Check_First_Time_Run()
+
+		; class initialize
+		xClipboard.Ini()
+		WinMenu.Ini()
+		; Create a OneQuick.Ext.ahk file
+		; and add a User_ComputerName class
+		this.Run_ext_user_ini()
+	}
+
+	; version
+	static _new_version_str := ""
+	Set_New_Version(ver)
+	{
+		OneQuick._new_version_str := ver
+		OneQuick.Update_Tray_Menu()
+	}
+	Get_New_Version()
+	{
+		return % OneQuick._new_version_str
+	}
+
+	Check_First_Time_Run()
+	{
+		skip_guide := OneQuick.GetConfig("skip_guide")
+		if(!skip_guide) {
+			this.User_Guide()
+			OneQuick.SetConfig("skip_guide", 1)
+		}
+		else
+		{
+			TrayTip, OneQuick, OneQuick running..., -1
+		}
+	}
+
+	User_Guide()
+	{
+		ftmsg := lang("first_time_msg", "It's your first time run this script, open Readme file?")
+		MsgBox, 0x44, Hello, % ftmsg
+		IfMsgBox, Yes
+		{
+			this.Edit("README.md")
+		}
+	}
+
+	Run_ext_user_ini()
+	{
+		user_str := "User_" A_ComputerName
+		StringReplace, user_str, user_str, - , _, All
+		user_str := RegExReplace(user_str, "[^a-zA-Z0-9_]")
+		if IsFunc(user_str ".Ini")
+		{
+			%user_str%.Ini()
+		}
+		Else
+		{
+			str := "`nclass " user_str "`n{`n`tIni()`n`t{`n`n`t}`n}`n`n"
+			FileAppend, % str, % this.Ext_ahk_file
+		}
+	}
+
+	_Debug_version()
+	{
+		; onequick._Debug_version
+		fake_type := 1
+		OneQuick.SetConfig("skip_version", "")
+		; fake remote
+		if(fake_type==1) {
+			fake_version := {"version": "1.2.1"
+				,"desc-major": "超级无敌大更新1<br>123"
+				,"desc-minor": "超级无敌大更新2<br>456"
+				,"desc-build": "超级无敌大更新3<br>789" }
+			this._update_version_info(this.versionObj, fake_version)
+		}
+		; fake local
+		else if (fake_type==2) {
+			fake_version := {"version": "0.0.0"
+				,"desc-major": "will-not-show"
+				,"desc-minor": "will-not-show"
+				,"desc-build": "will-not-show" }
+			this._update_version_info(fake_version, this.versionObj)
+		}
+	}
+
+	Check_update(show_msg=true)
+	{
+		Try
+		{
+			oHttp := ComObjCreate("WinHttp.Winhttprequest.5.1")
+			oHttp.open("GET", this.remote_version_yaml)
+			oHttp.send()
+			remoteVersionObj := Yaml(oHttp.responseText, 0)
+			new := this._update_version_info(this.versionObj, remoteVersionObj)
+			if(!new && show_msg) {
+				msg := lang("update_no_newer_ver", "this is the newest version.")
+				m(msg)
+			}
+		}
+		catch
+		{
+			if(show_msg) {
+				msg := lang("update_http_error", "Sorry, can't connect network.")
+				m(msg)
+			}
+		}
+	}
+
+	_update_version_info(thisVerObj, remoteVerObj)
+	{
+		this_version := thisVerObj["version"]
+		remote_version := remoteVerObj.version
+		remote_desc1 := remoteVerObj["desc-major"]
+		remote_desc2 := remoteVerObj["desc-minor"]
+		remote_desc3 := remoteVerObj["desc-build"]
+		StringReplace, remote_desc1, % remote_desc1, <br>, `n, All
+		StringReplace, remote_desc2, % remote_desc2, <br>, `n, All
+		StringReplace, remote_desc3, % remote_desc3, <br>, `n, All
+		version_compare := this._version_first_larger(remote_version, this_version)
+		if(version_compare > 0)
+		{
+			OneQuick.Set_New_Version(remote_version)
+			msg := lang("new_version_traytip", "New version!")
+			TrayTip, OneQuick, % msg " v" remote_version, -5
+			; skip build
+			skip_version := OneQuick.GetConfig("skip_version")
+			if(this._version_first_larger(remote_version, skip_version) > 0)
+			{
+				update_version_str := "v" this_version " -> v" remote_version
+				update_title := "OneQuick Update!"
+				update_msg := lang("update_msg", "OneQuick has a new version, open browser?")
+				update_msg .= "`n" update_version_str
+				update_msg .= "`n`n" lang("update_desc", "update log:")
+				if(version_compare==1) {
+					update_msg .= "`n" remote_desc1
+				}
+				else if(version_compare==2) {
+					update_msg .= "`n" remote_desc2
+				}
+				else if(version_compare==3) {
+					update_msg .= "`n" remote_desc3
+				}
+				MsgBox, 0x44, % update_title, % update_msg
+				IfMsgBox, Yes
+				{
+					run(this.remote_release)
+				}
+			}
+			OneQuick.SetConfig("skip_version", remote_version)
+			return true
+		}
+		return false
+	}
+
+	_version_first_larger(version1, version2)
+	{
+		ver1 := StrSplit(version1, ".")
+		ver2 := StrSplit(version2, ".")
+		if(ver1[1] > ver2[1]) {
+			return 1
+		}
+		else if(ver1[1] = ver2[1]) {
+			if(ver1[2] > ver2[2]) {
+				return 2
+			}
+			else if(ver1[2] = ver2[2]) {
+				if(ver1[3] > ver2[3]) {
+					return 3
+				}
+			}
+		}
+		return 0
+	}
+
+	GetFeatureCfg(keyStr, default="")
+	{
+		keyArray := StrSplit(keyStr, ".")
+		obj := OneQuick.FeatureObj
+		Loop, % keyArray.MaxIndex()-1
+		{
+			cur_key := keyArray[A_Index]
+			obj := obj[cur_key]
+		}
+		cur_key := keyArray[keyArray.MaxIndex()]
+		if(obj[cur_key]=="")
+		{
+			return default
+		}
+		return obj[cur_key]
+	}
+
+	LoadFeatureYaml()
+	{
+		if(this._DEBUG_ && this._DEBUG_LOAD_DEFAULT_YAML_) {
+			OneQuick.FeatureObj := Yaml(OneQuick.feature_yaml_default_file)
+		}
+		else {
+			if(!FileExist(this.feature_yaml_file)) {
+				FileCopy, % this.feature_yaml_default_file, % this.feature_yaml_file, 0
+			}
+			OneQuick.FeatureObj := Yaml(OneQuick.feature_yaml_file)
+		}
+	}
+
+	; var
+	static tray_standard_menu := 0
+	Update_Tray_Menu(ahk_std="")
+	{
+		if(ahk_std=="switch") {
+			this.tray_standard_menu := !this.tray_standard_menu
+		}
+		else if(ahk_std!="") {
+			this.tray_standard_menu := ahk_std
+		}
+		Menu, Tray, DeleteAll
+		if(this.tray_standard_menu)
+		{
+			Menu, Tray, Standard
+			Menu, Tray, Add
+			this.Add_OneQuick_Tray_Menu()
+			Menu, Tray, Check, % lang("AHK Standard Menu")
+		}
+		Else
+		{
+			Menu, Tray, NoStandard
+			this.Add_OneQuick_Tray_Menu()
+			Menu, Tray, UnCheck, % lang("AHK Standard Menu")
+		}
+		this.CheckAutorun()
+	}
+
+	Add_OneQuick_Tray_Menu()
+	{
+		; version
+		version_str := this.ProgramName " v" this.versionObj["version"]
 		Menu, Tray, Tip, % this.ProgramName
-		Menu, Tray, Add, % lang("About") version_str, Sub_OneQuick_About
+		Menu, Tray, Add, % version_str, SUB_VOID
+		Menu, Tray, Disable, % version_str
+		Menu, Tray, Add, % lang("help_online", "Help Online"), Sub_OneQuick_Help_Online
+		Menu, Tray, Add, % lang("Home Page"), Sub_OneQuick_Home_Page
+		if(OneQuick.Get_New_Version()) {
+			Menu, Tray, Add, % lang("! New Version !") " v" OneQuick.Get_New_Version(), Sub_OneQuick_Check_Update_NewVer
+		}
+		else {
+			Menu, Tray, Add, % lang("Check Update"), Sub_OneQuick_Check_Update
+		}
 		Menu, Tray, Add
 		Menu, Tray, Add, % lang("Autorun"), Sub_OneQuick_Autorun
 		Menu, Tray, Add, % lang("Reload"), Sub_OneQuick_Reload
@@ -123,181 +373,10 @@ class OneQuick
 		Menu, Tray, Add
 		Menu, Tray, Add, % lang("Open OneQuick Folder"), Sub_OneQuick_WorkDir
 		Menu, Tray, Add, % lang("Edit Ext.ahk"), Sub_OneQuick_EditExtFile
-		Menu, Tray, Add, % lang("Edit Setting.yaml"), Sub_OneQuick_EditSetting
+		Menu, Tray, Add, % lang("Edit feature.yaml"), Sub_OneQuick_EditFeature
 
 		Menu, Tray, Default, % lang("Suspend Hotkey")
 		Menu, Tray, Click, 1
-		this.CheckAutorun()
-
-		; class initialize
-		xClipboard.Ini()
-		WinMenu.Ini()
-
-		; register exit function
-		this.OnExit("OneQuick.SaveConfig")
-		; do NOT save yaml onexit, cause you may add sth while running,
-		; these lines you add would dispear after SaveSettingYaml cause you didn't change settingObj
-		; this.OnExit("OneQuick.SaveSettingYaml")
-		this.OnExit("OneQuick.CheckAutorun")
-
-		; Create a OneQuick.Ext.ahk file
-		; and add a User_ComputerName class
-		user_str := "User_" A_ComputerName
-		StringReplace, user_str, user_str, - , _, All
-		user_str := RegExReplace(user_str, "[^a-zA-Z0-9_]")
-		if IsFunc(user_str ".Ini")
-		{
-			%user_str%.Ini()
-		}
-		Else
-		{
-			str := "`nclass " user_str "`n{`n`tIni()`n`t{`n`n`t}`n}`n`n"
-			FileAppend, % str, % this.Ext_ahk_file
-			ftmsg := lang("first_time_msg", "It's your first time run this script, open Readme file?")
-			MsgBox, 0x44, Hello, % ftmsg
-			IfMsgBox, Yes
-			{
-				this.Edit("README.md")
-			}
-		}
-
-		; 检查更新
-		this.Check_update()
-	}
-
-	_Debug_version()
-	{
-		; onequick._Debug_version
-		fake_type := 2
-		if(fake_type==1) {
-			fake_version := {version: "1.2.3", build: "999", description: "debug version.`nshow line2"}
-			this._update_version_info(this.versionObj, fake_version)
-		}
-		else if (fake_type==2) {
-			fake_version := {version: "0.0.0", build: "0", description: "debug version.`nthis will never show."}
-			this._update_version_info(fake_version, this.versionObj)
-		}
-	}
-
-	Check_update()
-	{
-		oHttp := ComObjCreate("WinHttp.Winhttprequest.5.1")
-		oHttp.open("GET", this.remote_version_yaml)
-		oHttp.send()
-		remoteVersionObj := Yaml(oHttp.responseText, 0)
-		; 
-		this._update_version_info(this.versionObj, remoteVersionObj)
-	}
-
-	_update_version_info(thisVerObj, remoteVerObj)
-	{
-		this_version := thisVerObj["version"]
-		this_build := thisVerObj["build"]
-		; skip build
-		skip_build := this.Setting("_onequick_.skip_version")
-		if(skip_build > this_build) {
-			this_build := skip_build
-		}
-		; remote version
-		remote_version := remoteVerObj.version
-		remote_build := remoteVerObj["build"]
-		remote_desc := remoteVerObj["description"]
-		StringReplace, remote_desc, % remote_desc, <br>, `n, All
-		if(this_build < remote_build)
-		{
-			update_version_str := "v" this_version "." this_build " -> v" remote_version "." remote_build
-			update_title := "OneQuick Update!"
-			update_msg := lang("update_msg", "OneQuick has a new version, open browser?")
-			update_msg .= "`n" update_version_str
-			update_msg .= "`n`n" lang("update_desc", "update log:")
-			update_msg .= "`n" remote_desc
-			MsgBox, 0x44, % update_title, % update_msg
-			IfMsgBox, Yes
-			{
-				run(this.remote_release)
-			}
-			else {
-				update_skip_version := lang("update_skip", "skip this version?") "`n" update_version_str
-				MsgBox, 0x124, % update_title, % update_skip_version
-				IfMsgBox, Yes
-				{
-					this.SetSetting("_onequick_.skip_version", remote_build)
-				}
-			}
-		}
-	}
-
-	Setting(keyStr, default="", autoWrite=true)
-	{
-		this.LoadSettingYaml()
-		keyArray := StrSplit(keyStr, ".")
-		obj := OneQuick.settingObj
-		Loop, % keyArray.MaxIndex()-1
-		{
-			cur_key := keyArray[A_Index]
-			if(!IsObject(obj[cur_key]) && autoWrite)
-			{
-				obj.Add(cur_key ":")
-			}
-			obj := obj[cur_key]
-		}
-		cur_key := keyArray[keyArray.MaxIndex()]
-		if(obj[cur_key]=="")
-		{
-			if(autoWrite)
-			{
-				obj.Add(cur_key ": " default)
-				this.SaveSettingYaml()
-			}
-			return default
-		}
-		return obj[cur_key]
-	}
-
-	SetSetting(keyStr, value)
-	{
-		this.LoadSettingYaml()
-		keyArray := StrSplit(keyStr, ".")
-		obj := OneQuick.settingObj
-		Loop, % keyArray.MaxIndex()-1
-		{
-			cur_key := keyArray[A_Index]
-			if(!IsObject(obj[cur_key]))
-			{
-				obj.Add(cur_key ":")
-			}
-			obj := obj[cur_key]
-		}
-		cur_key := keyArray[keyArray.MaxIndex()]
-		obj.Add(cur_key ": " value)
-		this.SaveSettingYaml()
-	}
-
-	LoadSettingYaml()
-	{
-		if(this._DEBUG_ && this._DEBUG_LOAD_DEFAULT_YAML_) {
-			OneQuick.settingObj := Yaml(OneQuick.setting_yaml_default_file)
-		}
-		else {
-			if(!FileExist(this.setting_yaml_file)) {
-				FileCopy, % this.setting_yaml_default_file, % this.setting_yaml_file, 0
-			}
-			OneQuick.settingObj := Yaml(OneQuick.setting_yaml_file)
-		}
-	}
-
-	SaveSettingYaml()
-	{
-		if(this._DEBUG_ && this._DEBUG_LOAD_DEFAULT_YAML_) {
-			yaml_file := OneQuick.setting_yaml_default_file
-		}
-		else {
-			yaml_file := OneQuick.setting_yaml_file
-		}
-		; 手动修改yaml文件后，运行这个函数，那些修改会消失
-		; 因为程序内部记录了一个obj，这个obj并不会随着修改yaml而改变
-		FileDelete, % yaml_file
-		FileAppend, % OneQuick.settingObj.Dump(), % yaml_file
 	}
 
 	SetIcon(ico)
@@ -319,7 +398,7 @@ class OneQuick
 
 	CheckAutorun()
 	{
-		autorun := OneQuick.Setting("_onequick_.autorun", 0)
+		autorun := OneQuick.GetConfig("autorun", 0)
 		this.SetAutorun(autorun)
 		Return % autorun
 		; old version
@@ -346,13 +425,13 @@ class OneQuick
 		{
 			RegWrite, REG_SZ, HKCU, Software\Microsoft\Windows\CurrentVersion\Run , % this.ProgramName, % A_ScriptDir "\" this.ProgramName " Launcher.exe"
 			Menu, Tray, Check, % lang("Autorun")
-			this.SetSetting("_onequick_.autorun", 1)
+			OneQuick.SetConfig("autorun", 1)
 		}
 		Else
 		{
 			RegDelete, HKCU, Software\Microsoft\Windows\CurrentVersion\Run , % this.ProgramName
 			Menu, Tray, UnCheck, % lang("Autorun")
-			this.SetSetting("_onequick_.autorun", 0)
+			OneQuick.SetConfig("autorun", 0)
 		}
 	}
 
@@ -394,23 +473,39 @@ class OneQuick
 		this.OnSuspendCmd.Insert(func)
 	}
 
-	SaveConfig()
+	GetConfig(key, default="", section="onequick", autoWrite=true)
+	{
+		IniRead, output, % OneQuick.config_file, % section, % key
+		if(output=="ERROR")
+		{
+			OneQuick.SetConfig(key, default, section)
+			return default
+		}
+		return output
+	}
+
+	SetConfig(key, value, section="onequick")
+	{
+		IniWrite, % value, % OneQuick.config_file, % section, % key
+	}
+
+	SaveUserData()
 	{
 		if(!FileExist(this._JSON_DIR)) {
 			FileCreateDir, % this._JSON_DIR
 		}
-		FileDelete, % this.JsonName
-		FileAppend % JSON.stringify(this.Config), % this.JsonName
+		FileDelete, % this.user_data_file
+		FileAppend % JSON.stringify(OneQuick.UserData), % this.user_data_file
 	}
 
-	LoadConfig()
+	LoadUserData()
 	{
-		FileRead, str, % this.JsonName
+		FileRead, str, % this.user_data_file
 		obj := JSON.parse(str)
 		if(IsObject(obj))
-			this.Config := obj
+			OneQuick.UserData := obj
 		Else
-			this.Config := []
+			OneQuick.UserData := []
 	}
 
 	Command_run()
@@ -430,6 +525,13 @@ RunArr(OneQuick.OnExitCmd)
 ExitApp
 
 ; --------------------------
+SUB_VOID:
+Return
+
+Sub_Auto_Check_update:
+OneQuick.Check_update(false)
+return
+
 Sub_OneQuick_ToggleSuspend:
 if A_IsSuspended
 {
@@ -467,25 +569,26 @@ OneQuick.AutoSetIcon()
 Return
 
 Sub_OneQuick_StandardMenu:
-OneQuick.tray_standard_menu := !OneQuick.tray_standard_menu
-if(OneQuick.tray_standard_menu)
-{
-	Menu, Tray, Standard
-	Menu, Tray, Check, % lang("AHK Standard Menu")
-}
-Else
-{
-	Menu, Tray, NoStandard
-	Menu, Tray, UnCheck, % lang("AHK Standard Menu")
-}
+OneQuick.Update_Tray_Menu("switch")
 Return
 
 Sub_OneQuick_Autorun:
 OneQuick.SetAutorun(!OneQuick.CheckAutorun())
 Return
 
-Sub_OneQuick_About:
+Sub_OneQuick_Help_Online:
+run % OneQuick.remote_help
+Return
+
+Sub_OneQuick_Home_Page:
 run("https://github.com/XUJINKAI/OneQuick")
+Return
+
+Sub_OneQuick_Check_Update:
+OneQuick.Check_update()
+Return
+Sub_OneQuick_Check_Update_NewVer:
+run(OneQuick.remote_release)
 Return
 
 Sub_OneQuick_Reload:
@@ -535,8 +638,8 @@ Sub_OneQuick_EditMain:
 OneQuick.Edit(A_ScriptFullPath)
 Return
 
-Sub_OneQuick_EditSetting:
-OneQuick.Edit(OneQuick.setting_yaml_file)
+Sub_OneQuick_EditFeature:
+OneQuick.Edit(OneQuick.feature_yaml_file)
 Return
 
 
@@ -567,7 +670,7 @@ lang(key, default="")
 {
 	if(default=="")
 		default := key
-	lang := OneQuick.Setting("_onequick_.lang", OneQuick.Default_lang)
+	lang := OneQuick.GetConfig("lang", OneQuick.Default_lang)
 	if(lang=="en") {
 		return % default
 	}
@@ -609,14 +712,15 @@ a clipboard enhance class, provide a clipboard history list & quick search menu
 */
 class xClipboard
 {
+	static ClsName := "clipboard"
+	static ini_registered := 0
 	static Clips := []
 	static FavourClips := []
 	static BrowserArr := []
 	static BrowserItemName := ""
 	static SearchArr := []
-	static NumOfClipsShownDefault := 10
-	static ClipsLimitNum := 50
-	static ini_registered := 0
+	static NumOfClipsShownDefault = 
+	static ClipsLimitNum = 
 
 	Ini()
 	{
@@ -624,8 +728,10 @@ class xClipboard
 			Return
 		OneQuick.OnClipboardChange("Sub_xClipboard_OnClipboardChange")
 		OneQuick.OnExit("Sub_xClipboard_OnExit")
-		this.Clips := OneQuick.Config["xClipboard_Clips"]
-		this.FavourClips := OneQuick.Config["xClipboard_FavourClips"]
+		this.Clips := OneQuick.UserData["xClipboard_Clips"]
+		this.FavourClips := OneQuick.UserData["xClipboard_FavourClips"]
+		this.NumOfClipsShownDefault := OneQuick.GetConfig("NumOfClipsShownDefault", 10, this.ClsName)
+		this.ClipsLimitNum := OneQuick.GetConfig("ClipsLimitNum", 50, this.ClsName)
 		if not IsObject(this.Clips)
 			this.Clips := []
 		if not IsObject(this.FavourClips)
@@ -939,8 +1045,8 @@ while (xClipboard.ClipsLimitNum > 0 && xClipboard.Clips.MaxIndex() > xClipboard.
 Return
 
 Sub_xClipboard_OnExit:
-OneQuick.Config["xClipboard_Clips"] := xClipboard.Clips
-OneQuick.Config["xClipboard_FavourClips"] := xClipboard.FavourClips
+OneQuick.UserData["xClipboard_Clips"] := xClipboard.Clips
+OneQuick.UserData["xClipboard_FavourClips"] := xClipboard.FavourClips
 Return
 
 
@@ -1030,7 +1136,7 @@ class WinMenu
 	{
 		if (this.ini_registered == 1)
 			Return
-		this.HideIDs := OneQuick.Config["WinMenu_HideIDs"]
+		this.HideIDs := OneQuick.UserData["WinMenu_HideIDs"]
 		if not IsObject(this.HideIDs)
 			this.HideIDs := {}
 		OneQuick.OnExit("Sub_WinMenu_OnExit")
@@ -1128,7 +1234,7 @@ WinMenu.HideIDs.Remove(A_ThisMenuItem)
 Return
 
 Sub_WinMenu_OnExit:
-OneQuick.Config["WinMenu_HideIDs"] := WinMenu.HideIDs
+OneQuick.UserData["WinMenu_HideIDs"] := WinMenu.HideIDs
 Return
 
 

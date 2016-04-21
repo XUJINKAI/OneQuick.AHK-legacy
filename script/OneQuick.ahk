@@ -31,7 +31,7 @@ sets three hotkeys, in this case:
 xClipboard.SetSearchList([[key, name, website],[...]])
 sets search list, %s in each string will be replaced by the content
 */
-if(OneQuick.Setting("clipboard.switch", 1))
+if(OneQuick.GetFeatureCfg("clipboard.switch", 0))
 {
 	; 快捷键设置
 	xClipboard.SetHotkey("^+x", "^+c", "^+v")
@@ -40,7 +40,7 @@ if(OneQuick.Setting("clipboard.switch", 1))
 		,edge: [1,"Edge","microsoft-edge:"]
 		,chrome: [2,"Chrome","chrome.exe"]
 		,ie: [3,"IE","iexplore.exe"]}
-	xClipboard_browser_setting := OneQuick.Setting("clipboard.browser", "Default, Edge, Chrome, IE")
+	xClipboard_browser_setting := OneQuick.GetFeatureCfg("clipboard.browser", "Default, Edge, Chrome, IE")
 	xClipboard.SetBrowserList(list_filter(xClipboard_browser_obj, xClipboard_browser_setting))
 	; 快速搜索列表
 	xClipboard_search_obj := { google: ["g","Google","https://www.google.com/search?q=%s"]
@@ -55,7 +55,7 @@ if(OneQuick.Setting("clipboard.switch", 1))
 		,netease_music: ["","网易云音乐","http://music.163.com/#/search/m/?s=%s&type=1"]
 		,douban_movie: ["m","豆瓣电影","http://movie.douban.com/subject_search?search_text=%s"]
 		,QR_code: ["q","QR-Code","http://api.qrserver.com/v1/create-qr-code/?data=%s"] }
-	xClipboard_search_setting := OneQuick.Setting("clipboard.search", "google, baidu, baidu_local, weibo, zhihu, guokr, bilibili, acfun, youtube, netease_music, douban_movie, qr_code")
+	xClipboard_search_setting := OneQuick.GetFeatureCfg("clipboard.search", "google, baidu, baidu_local, weibo, zhihu, guokr, bilibili, acfun, youtube, netease_music, douban_movie, qr_code")
 	xClipboard.SetSearchList(list_filter(xClipboard_search_obj, xClipboard_search_setting))
 	; set default list
 	OneQuick.SetSetting("clipboard.browser_default", obj_key_list(xClipboard_browser_obj))
@@ -199,18 +199,18 @@ register_hotkey(key_name, action, prefix="")
 /*
 普通快捷键
 */
-if(OneQuick.Setting("hotkey.switch", 1))
+if(OneQuick.GetFeatureCfg("hotkey.switch", 0))
 {
-	For key, value in OneQuick.Setting("hotkey.buildin", {}, False)
+	For key, value in OneQuick.GetFeatureCfg("hotkey.buildin", {})
 		register_hotkey(key, value, "")
 }
 
 /*
 屏幕边缘操作
 */
-if(OneQuick.Setting("screen-border.switch", 1))
+if(OneQuick.GetFeatureCfg("screen-border.switch", 0))
 {
-	For border_key, border_action in OneQuick.Setting("screen-border.action", {}, False)
+	For border_key, border_action in OneQuick.GetFeatureCfg("screen-border.action", {})
 		for key, value in border_action
 			register_hotkey(key, value, border_key)
 }
@@ -218,9 +218,9 @@ if(OneQuick.Setting("screen-border.switch", 1))
 /*
 setting rember
 */
-SETTING_REM := { notepad_ctrl_w_close: OneQuick.Setting("app_enhance.notepad_ctrl_w_close", 1)
-				,chrome_scroll_tab: OneQuick.Setting("app_enhance.chrome_scroll_tab", 1)
-				,sublime_file_folder: OneQuick.Setting("app_enhance.sublime_file_folder", 1) }
+SETTING_REM := { notepad_ctrl_w_close: OneQuick.GetFeatureCfg("app_enhance.notepad_ctrl_w_close", 0)
+				,chrome_scroll_tab: OneQuick.GetFeatureCfg("app_enhance.chrome_scroll_tab", 0)
+				,sublime_file_folder: OneQuick.GetFeatureCfg("app_enhance.sublime_file_folder", 0) }
 
 
 ; ////////////////////////////////////////////////////////////////

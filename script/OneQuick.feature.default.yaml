@@ -1,7 +1,5 @@
 _onequick_: 
-  autorun: 0
-  lang: cn
-  # for old version
+  # for old version(0.1.0) check update
   version: 0.1.0
   version-build: 10
 app_enhance: 

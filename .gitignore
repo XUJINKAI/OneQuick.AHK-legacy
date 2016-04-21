@@ -8,6 +8,6 @@
 *.bat
 *.exe
 
-OneQuick Launcher.exe
+config.ini
 OneQuick.Ext.ahk
-OneQuick.setting.yaml
+OneQuick.feature.yaml

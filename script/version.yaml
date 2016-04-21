@@ -1,4 +1,6 @@
-﻿name: onequick
-version: 0.1.1
-build: 12
-description: 优化安装流程，内置UIAccess; <br>现在可以跳过某个版本的更新。
+﻿# can't read first line for unknown reason (maybe utf8 BOM)
+program: onequick
+version: 0.2.1
+desc-major: 无
+desc-minor: 一键安装；<br>更完善的文件结构；<br>新的更新功能；<br>强烈建议升级。
+desc-build: bug fix
