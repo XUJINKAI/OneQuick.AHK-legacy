@@ -47,7 +47,7 @@ class OneQuick
 	static _LANG_DIR := "lang/"
 	static _SCRIPT_DIR := "script/"
 	; file
-	static Launcher_Name := OneQuick._MAIN_WORKDIR "OneQuick Launcher.exe"
+	static Launcher_Name := A_WorkingDir "\OneQuick Launcher.exe"
 	static Ext_ahk_file := OneQuick._MAIN_WORKDIR "OneQuick.Ext.ahk"
 	static version_yaml_file := OneQuick._MAIN_WORKDIR OneQuick._SCRIPT_DIR "version.yaml"
 	static feature_yaml_file := OneQuick._MAIN_WORKDIR "OneQuick.feature.yaml"
@@ -114,11 +114,12 @@ class OneQuick
 		this.SetIcon(this.icon_default)
 		this.Update_Tray_Menu()
 		this.CheckAutorun()
+		this.Show_traytip_update()
+		; guide
+		this.Check_First_Time_Run()
 		; 检查更新
 		; wait running traytip dispear
 		SetTimer, Sub_Auto_Check_update, -7000
-		; guide
-		this.Check_First_Time_Run()
 
 		; class initialize
 		xClipboard.Ini()
@@ -128,24 +129,11 @@ class OneQuick
 		this.Run_ext_user_ini()
 	}
 
-	; version
-	static _new_version_str := ""
-	Set_New_Version(ver)
+	Show_traytip_update()
 	{
-		OneQuick._new_version_str := ver
-		OneQuick.Update_Tray_Menu()
-	}
-	Get_New_Version()
-	{
-		return % OneQuick._new_version_str
-	}
-
-	Check_First_Time_Run()
-	{
-		this_version := this.versionObj["version"]
-		rem_version := this.GetConfig("msgbox_tip_version")
 		msg_running := lang("traytip_runing", "OneQuick running...")
-		if(this._version_first_larger(rem_version, this_version) > 0) {
+		local_rem_new_version := this._get_Local_Rem_New_Version()
+		if(local_rem_new_version!="") {
 			msg := lang("new_version_traytip", "New version!")
 			TrayTip, OneQuick, % msg_running "`n" msg, 1
 			this.alreay_traytip_newversion := true
@@ -153,7 +141,30 @@ class OneQuick
 		else {
 			TrayTip, OneQuick, % msg_running, 1
 		}
-		; guide
+	}
+
+	; version
+	static _local_rem_new_version_str := ""
+	_set_Local_Rem_New_Version(ver)
+	{
+		OneQuick._local_rem_new_version_str := ver
+		OneQuick.Update_Tray_Menu()
+		OneQuick.SetConfig("msgbox_tip_version", ver)
+	}
+	_get_Local_Rem_New_Version()
+	{
+		this_version := this.versionObj["version"]
+		rem_version := this.GetConfig("msgbox_tip_version")
+		OneQuick._local_rem_new_version_str := this._version_bigger(OneQuick._local_rem_new_version_str, this_version)
+		OneQuick._local_rem_new_version_str := this._version_bigger(OneQuick._local_rem_new_version_str, rem_version)
+		if(OneQuick._local_rem_new_version_str==this_version) {
+			return ""
+		}
+		return % OneQuick._local_rem_new_version_str
+	}
+
+	Check_First_Time_Run()
+	{
 		skip_guide := OneQuick.GetConfig("skip_guide")
 		if(!skip_guide) {
 			this.User_Guide()
@@ -247,42 +258,50 @@ class OneQuick
 		if(version_compare > 0)
 		{
 			msg := lang("new_version_traytip", "New version!")
-			; skip build
 			msgbox_tip_version := OneQuick.GetConfig("msgbox_tip_version")
 			if(this._version_first_larger(remote_version, msgbox_tip_version) > 0)
 			{
-				update_version_str := "v" this_version " -> v" remote_version
-				update_title := "OneQuick Update!"
-				update_msg := lang("update_msg", "OneQuick has a new version, open browser?")
-				update_msg .= "`n" update_version_str
-				update_msg .= "`n`n" lang("update_desc", "update log:")
-				if(version_compare==1) {
-					update_msg .= "`n" remote_desc1
-				}
-				else if(version_compare==2) {
-					update_msg .= "`n" remote_desc2
-				}
-				else if(version_compare==3) {
-					update_msg .= "`n" remote_desc3
-				}
-				MsgBox, 0x44, % update_title, % update_msg
-				IfMsgBox, Yes
+				if(version_compare < 3)
 				{
-					run(this.remote_release)
+					update_version_str := "v" this_version " -> v" remote_version
+					update_title := "OneQuick Update!"
+					update_msg := lang("update_msg", "OneQuick has a new version, open browser?")
+					update_msg .= "`n" update_version_str
+					update_msg .= "`n`n" lang("update_desc", "update log:")
+					if(version_compare==1) {
+						update_msg .= "`n" remote_desc1
+					}
+					else if(version_compare==2) {
+						update_msg .= "`n" remote_desc2
+					}
+					else if(version_compare==3) {
+						update_msg .= "`n" remote_desc3
+					}
+					MsgBox, 0x44, % update_title, % update_msg
+					IfMsgBox, Yes
+					{
+						run(this.remote_release)
+					}
 				}
 			}
-			else if(version_compare < 3) {
-				if(!this.alreay_traytip_newversion) {
-					this.alreay_traytip_newversion := true
-					TrayTip, OneQuick, % msg " v" remote_version, 5
-				}
-			}
-			OneQuick.Set_New_Version(remote_version)
-			OneQuick.SetConfig("msgbox_tip_version", remote_version)
+			OneQuick._set_Local_Rem_New_Version(remote_version)
 		}
 		else if(show_msg) {
 			msg := lang("update_no_newer_ver", "this is the newest version.")
-			m(msg "`nv" this_version " -> v" remote_version)
+			if(this._version_first_larger(this_version, remote_version)) {
+				msgxxx := "`n你已经超过了作者...`n佩服..."
+			}
+			m(msg "`nv" this_version " -> v" remote_version msgxxx)
+		}
+	}
+
+	_version_bigger(ver1, ver2)
+	{
+		if(this._version_first_larger(ver1, ver2) > 0) {
+			return ver1
+		}
+		else {
+			Return ver2
 		}
 	}
 
@@ -372,8 +391,8 @@ class OneQuick
 		Menu, Tray, Disable, % version_str
 		Menu, Tray, Add, % lang("help_online", "Help Online"), Sub_OneQuick_Help_Online
 		Menu, Tray, Add, % lang("Home Page"), Sub_OneQuick_Home_Page
-		if(OneQuick.Get_New_Version()) {
-			Menu, Tray, Add, % lang("! New Version !") " v" OneQuick.Get_New_Version(), Sub_OneQuick_Check_Update_NewVer
+		if(OneQuick._get_Local_Rem_New_Version()) {
+			Menu, Tray, Add, % lang("! New Version !") " v" OneQuick._get_Local_Rem_New_Version(), Sub_OneQuick_Check_Update_NewVer
 		}
 		else {
 			Menu, Tray, Add, % lang("Check Update"), Sub_OneQuick_Check_Update
