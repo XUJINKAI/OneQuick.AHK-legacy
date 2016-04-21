@@ -142,24 +142,22 @@ class OneQuick
 
 	Check_First_Time_Run()
 	{
+		this_version := this.versionObj["version"]
+		rem_version := this.GetConfig("msgbox_tip_version")
+		msg_running := lang("traytip_runing", "OneQuick running...")
+		if(this._version_first_larger(rem_version, this_version) > 0) {
+			msg := lang("new_version_traytip", "New version!")
+			TrayTip, OneQuick, % msg_running "`n" msg, 1
+			this.alreay_traytip_newversion := true
+		}
+		else {
+			TrayTip, OneQuick, % msg_running, 1
+		}
+		; guide
 		skip_guide := OneQuick.GetConfig("skip_guide")
 		if(!skip_guide) {
 			this.User_Guide()
 			OneQuick.SetConfig("skip_guide", 1)
-		}
-		else
-		{
-			this_version := this.versionObj["version"]
-			rem_version := this.GetConfig("msgbox_tip_version")
-			msg_running := lang("traytip_runing", "OneQuick running...")
-			if(this._version_first_larger(rem_version, this_version) > 0) {
-				msg := lang("new_version_traytip", "New version!")
-				TrayTip, OneQuick, % msg_running "`n" msg, 1
-				this.alreay_traytip_newversion := true
-			}
-			else {
-				TrayTip, OneQuick, % msg_running, 1
-			}
 		}
 	}
 
@@ -171,6 +169,8 @@ class OneQuick
 		{
 			this.Edit("README.md")
 		}
+		msg := lang("first_time_right_click_tray_for_help", "You can right click on tray icon for more help.")
+		m(msg)
 	}
 
 	Run_ext_user_ini()
@@ -282,7 +282,7 @@ class OneQuick
 		}
 		else if(show_msg) {
 			msg := lang("update_no_newer_ver", "this is the newest version.")
-			m(msg)
+			m(msg "`nv" this_version " -> v" remote_version)
 		}
 	}
 
@@ -585,7 +585,7 @@ OneQuick.SetAutorun(!OneQuick.CheckAutorun())
 Return
 
 Sub_OneQuick_Help_Online:
-run % OneQuick.remote_help
+run(OneQuick.remote_help)
 Return
 
 Sub_OneQuick_Home_Page:
@@ -2102,6 +2102,11 @@ run(command, throwErr := 1)
 		else if(RegExMatch(command, "i)send (.*)", sd))
 		{
 			send, % sd1
+			return
+		}
+		else if(RegExMatch(command, "i)m:(.*)", msg))
+		{
+			m(msg1)
 			return
 		}
 		Try

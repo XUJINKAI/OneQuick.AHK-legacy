@@ -1,7 +1,3 @@
-_onequick_: 
-  # for old version(0.1.0) check update
-  version: 0.1.0
-  version-build: 10
 app_enhance: 
   chrome_scroll_tab: 1
   notepad_ctrl_w_close: 1

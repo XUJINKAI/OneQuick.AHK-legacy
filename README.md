@@ -9,19 +9,15 @@ It provides clipboard manager, screen border operation, window operation, quick 
 It's also a useful library to write your own ahk code.  
 
 
-使用
+安装
 ------------------------
-OneQuick 不需要安装。  
 到<https://github.com/XUJINKAI/OneQuick/releases>下载最新的压缩包，解压执行**OneQuick Launcher.exe** 即可。  
-_ahk脚本的执行需要 AutoHotKey 支持，压缩包中已经内置了autohotkey.exe，你可以到[这里][AHK] 下载AutoHotKey的最新版本。_  
-
-关于配置与自定义：
-* 如果你想关闭或修改OneQuick的某项功能，可以修改**OneQuick.setting.yaml** 文件
-* 如果你想基于OneQuick 扩展自己的功能，可以将自己的代码添加到OneQuick.Ext.ahk 中
+_OneQuick基于[AHK][AHK]，如果没有安装的话会先安装AHK。_
 
 
-[相关文档][DOCUMENT]
+帮助 & 文档
 ------------------------
+关于如何配置功能与开发，请[查看这里][DOCUMENT]
 
 
 默认功能
@@ -86,7 +82,7 @@ Q&A
 #### OneQuick的由来？  
 OneQuick开始于2014年初，最初只是自用，经历过几次大的重写，断断续续，到2015年左右成型。用到现在又快一年了，在这一年中，我发现我已经离不开OneQuick了，当临时使用别人的电脑时，会因为没有相关的快捷设置而无所适从。将OneQuick发布出来，也是作为自己研究生生涯的纪念。
 
-#### 让OneQuick对管理员权限程序（任务管理器等）起作用  
+#### OneQuick对管理员权限程序（任务管理器等）不起作用？  
 运行AHK目录下的EnableUIAccess2AHK.ahk 即可.  
 
 #### 修改 OneQuick 默认的文本编辑器？  
@@ -103,8 +99,8 @@ OneQuick可以“执行”【"av"+数字】格式的字串。比如，按ctrl + 
 关于
 ------------------------
 博客：http://xujinkai.info/  
-相关微博：http://weibo.com/1657846235/DnitJ1ONc  
-知乎相关回答：https://www.zhihu.com/question/36847530/answer/92868539  
+微博：http://weibo.com/johnkale  
+知乎相关回答：https://www.zhihu.com/question/36847530/answer/92868539 快来点赞！  
 
 
 版权 · License

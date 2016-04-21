@@ -36,10 +36,10 @@ if(OneQuick.GetFeatureCfg("clipboard.switch", 0))
 	; 快捷键设置
 	xClipboard.SetHotkey("^+x", "^+c", "^+v")
 	; 浏览器
-	xClipboard_browser_obj := { default: [0,"Default",""]
-		,edge: [1,"Edge","microsoft-edge:"]
-		,chrome: [2,"Chrome","chrome.exe"]
-		,ie: [3,"IE","iexplore.exe"]}
+	xClipboard_browser_obj := { default: [1,"Default",""]
+		,edge: [2,"Edge","microsoft-edge:"]
+		,chrome: [3,"Chrome","chrome.exe"]
+		,ie: [4,"IE","iexplore.exe"]}
 	xClipboard_browser_setting := OneQuick.GetFeatureCfg("clipboard.browser", "Default, Edge, Chrome, IE")
 	xClipboard.SetBrowserList(list_filter(xClipboard_browser_obj, xClipboard_browser_setting))
 	; 快速搜索列表
