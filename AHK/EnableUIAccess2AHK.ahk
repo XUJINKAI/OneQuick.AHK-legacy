@@ -29,10 +29,14 @@
 
 ; Command line args:
 ; JK 对ahk.exe
-state = %1%
+para1 = %1%
+silent := para1=="/S"
 
 m(msg)
 {
+    if(silent) {
+        return
+    }
     msgbox ,,OneQuick, % msg
 }
 
@@ -60,7 +64,7 @@ if Crypt.IsSigned(in_file)
 ; `n
 ; Continue at your own risk.
 ; )
-if(state=="")
+if(!silent)
 {
     MsgBox 49,,
     (
