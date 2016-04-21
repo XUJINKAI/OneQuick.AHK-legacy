@@ -47,6 +47,7 @@ class OneQuick
 	static _LANG_DIR := "lang/"
 	static _SCRIPT_DIR := "script/"
 	; file
+	static Launcher_Name := OneQuick._MAIN_WORKDIR "OneQuick Launcher.exe"
 	static Ext_ahk_file := OneQuick._MAIN_WORKDIR "OneQuick.Ext.ahk"
 	static version_yaml_file := OneQuick._MAIN_WORKDIR OneQuick._SCRIPT_DIR "version.yaml"
 	static feature_yaml_file := OneQuick._MAIN_WORKDIR "OneQuick.feature.yaml"
@@ -79,6 +80,8 @@ class OneQuick
 	static Default_lang := "cn"
 	static Editor =
 	static Browser := ""
+	; var/switch
+	static alreay_traytip_newversion := false
 
 	Ini()
 	{
@@ -112,7 +115,8 @@ class OneQuick
 		this.Update_Tray_Menu()
 		this.CheckAutorun()
 		; 检查更新
-		SetTimer, Sub_Auto_Check_update, -2000
+		; wait running traytip dispear
+		SetTimer, Sub_Auto_Check_update, -7000
 		; guide
 		this.Check_First_Time_Run()
 
@@ -145,7 +149,17 @@ class OneQuick
 		}
 		else
 		{
-			TrayTip, OneQuick, OneQuick running..., -1
+			this_version := this.versionObj["version"]
+			rem_version := this.GetConfig("msgbox_tip_version")
+			msg_running := lang("traytip_runing", "OneQuick running...")
+			if(this._version_first_larger(rem_version, this_version) > 0) {
+				msg := lang("new_version_traytip", "New version!")
+				TrayTip, OneQuick, % msg_running "`n" msg, 1
+				this.alreay_traytip_newversion := true
+			}
+			else {
+				TrayTip, OneQuick, % msg_running, 1
+			}
 		}
 	}
 
@@ -178,11 +192,11 @@ class OneQuick
 	_Debug_version()
 	{
 		; onequick._Debug_version
-		fake_type := 1
-		OneQuick.SetConfig("skip_version", "")
+		fake_type := 2
+		OneQuick.SetConfig("msgbox_tip_version", "")
 		; fake remote
 		if(fake_type==1) {
-			fake_version := {"version": "1.2.1"
+			fake_version := {"version": "1.3.1"
 				,"desc-major": "超级无敌大更新1<br>123"
 				,"desc-minor": "超级无敌大更新2<br>456"
 				,"desc-build": "超级无敌大更新3<br>789" }
@@ -200,20 +214,18 @@ class OneQuick
 
 	Check_update(show_msg=true)
 	{
+		; OneQuick.Check_update
 		Try
 		{
 			oHttp := ComObjCreate("WinHttp.Winhttprequest.5.1")
 			oHttp.open("GET", this.remote_version_yaml)
 			oHttp.send()
 			remoteVersionObj := Yaml(oHttp.responseText, 0)
-			new := this._update_version_info(this.versionObj, remoteVersionObj)
-			if(!new && show_msg) {
-				msg := lang("update_no_newer_ver", "this is the newest version.")
-				m(msg)
-			}
+			this._update_version_info(this.versionObj, remoteVersionObj, show_msg)
 		}
 		catch
 		{
+			SetTimer, Sub_Auto_Check_update, -3600000
 			if(show_msg) {
 				msg := lang("update_http_error", "Sorry, can't connect network.")
 				m(msg)
@@ -221,7 +233,7 @@ class OneQuick
 		}
 	}
 
-	_update_version_info(thisVerObj, remoteVerObj)
+	_update_version_info(thisVerObj, remoteVerObj, show_msg=true)
 	{
 		this_version := thisVerObj["version"]
 		remote_version := remoteVerObj.version
@@ -234,12 +246,10 @@ class OneQuick
 		version_compare := this._version_first_larger(remote_version, this_version)
 		if(version_compare > 0)
 		{
-			OneQuick.Set_New_Version(remote_version)
 			msg := lang("new_version_traytip", "New version!")
-			TrayTip, OneQuick, % msg " v" remote_version, -5
 			; skip build
-			skip_version := OneQuick.GetConfig("skip_version")
-			if(this._version_first_larger(remote_version, skip_version) > 0)
+			msgbox_tip_version := OneQuick.GetConfig("msgbox_tip_version")
+			if(this._version_first_larger(remote_version, msgbox_tip_version) > 0)
 			{
 				update_version_str := "v" this_version " -> v" remote_version
 				update_title := "OneQuick Update!"
@@ -261,10 +271,19 @@ class OneQuick
 					run(this.remote_release)
 				}
 			}
-			OneQuick.SetConfig("skip_version", remote_version)
-			return true
+			else if(version_compare < 3) {
+				if(!this.alreay_traytip_newversion) {
+					this.alreay_traytip_newversion := true
+					TrayTip, OneQuick, % msg " v" remote_version, 5
+				}
+			}
+			OneQuick.Set_New_Version(remote_version)
+			OneQuick.SetConfig("msgbox_tip_version", remote_version)
 		}
-		return false
+		else if(show_msg) {
+			msg := lang("update_no_newer_ver", "this is the newest version.")
+			m(msg)
+		}
 	}
 
 	_version_first_larger(version1, version2)
@@ -399,31 +418,18 @@ class OneQuick
 	CheckAutorun()
 	{
 		autorun := OneQuick.GetConfig("autorun", 0)
-		this.SetAutorun(autorun)
+		try
+		{
+			this.SetAutorun(autorun)
+		}
 		Return % autorun
-		; old version
-		RegRead, autorun, HKEY_CURRENT_USER, Software\Microsoft\Windows\CurrentVersion\Run, % this.ProgramName
-		if(autorun)
-		{
-			Menu, Tray, Check, % lang("Autorun")
-			launcher_name := A_ScriptDir "\" this.ProgramName " Launcher.exe"
-			if (launcher_name != autorun)
-			{
-				this.SetAutorun(1)
-			}
-		}
-		Else
-		{
-			Menu, Tray, UnCheck, % lang("Autorun")
-		}
-		return % autorun
 	}
 
 	SetAutorun(autorun)
 	{
 		if(autorun)
 		{
-			RegWrite, REG_SZ, HKCU, Software\Microsoft\Windows\CurrentVersion\Run , % this.ProgramName, % A_ScriptDir "\" this.ProgramName " Launcher.exe"
+			RegWrite, REG_SZ, HKCU, Software\Microsoft\Windows\CurrentVersion\Run , % this.ProgramName, % OneQuick.Launcher_Name
 			Menu, Tray, Check, % lang("Autorun")
 			OneQuick.SetConfig("autorun", 1)
 		}
@@ -510,7 +516,9 @@ class OneQuick
 
 	Command_run()
 	{
-		InputBox, cmd, OneQuick Command Run, input command:, , 330, 130
+		Gui +LastFound +OwnDialogs +AlwaysOnTop
+		msg := lang("input_command_run", "Input command:")
+		InputBox, cmd, OneQuick Command Run, % msg, , 330, 150
 		if !ErrorLevel
 			run(cmd)
 	}
