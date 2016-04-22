@@ -7,6 +7,7 @@
 *.zip
 *.bat
 *.exe
+*.lnk
 
 config.ini
 OneQuick.Ext.ahk

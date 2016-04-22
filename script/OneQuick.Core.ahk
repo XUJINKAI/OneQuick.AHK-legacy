@@ -174,8 +174,11 @@ class OneQuick
 
 	User_Guide()
 	{
-		ftmsg := lang("first_time_msg", "It's your first time run this script, open Readme file?")
-		MsgBox, 0x44, Hello, % ftmsg
+		m("Welcome!")
+		msg := lang("first_time_readme_or_online_for_more_info", "you can read README.md or go to project's home page for more information.")
+		m(msg)
+		ftmsg := lang("first_time_open_readme", "Open Readme file?")
+		MsgBox, 0x44, OneQuick, % ftmsg
 		IfMsgBox, Yes
 		{
 			this.Edit("README.md")
@@ -236,7 +239,6 @@ class OneQuick
 		}
 		catch
 		{
-			SetTimer, Sub_Auto_Check_update, -3600000
 			if(show_msg) {
 				msg := lang("update_http_error", "Sorry, can't connect network.")
 				m(msg)
@@ -556,6 +558,7 @@ SUB_VOID:
 Return
 
 Sub_Auto_Check_update:
+SetTimer, Sub_Auto_Check_update, -3600000
 OneQuick.Check_update(false)
 return
 

@@ -86,11 +86,15 @@ OneQuick开始于2014年初，最初只是自用，经历过几次大的重写�
 运行AHK目录下的EnableUIAccess2AHK.ahk 即可.  
 
 #### 修改 OneQuick 默认的文本编辑器？  
-参考[这里][ext_default_editor] 
+参考[这里][ext_default_editor]  
+
+#### 让OneQuick支持更多ahk功能，如快速输入字符串？  
+参考[这里][ext_ahk_code]  
 
 #### 执行b站av号是怎么回事？  
-OneQuick可以“执行”【"av"+数字】格式的字串。比如，按ctrl + shift + c 复制 **av314** 并弹出菜单后，再按空格即可打开相应视频。  
-这个功能定义在run() 函数中，也可以在run_user() 中扩展。
+OneQuick可以“执行”【"av"+数字】格式的字串。  
+比如，按ctrl + shift + c 复制 `av314` 并弹出菜单后，再按空格即可打开相应视频。  
+扩展类似的功能可以参考[这里][run_func]  
 
 #### 剪贴板只能保存文本记录？  
 是的，OneQuick的剪贴板记录暂不支持图片等内容。不过，只要不利用OneQuick的剪贴板记录切换内容，系统剪贴板就不会受到影响。
@@ -101,6 +105,7 @@ OneQuick可以“执行”【"av"+数字】格式的字串。比如，按ctrl + 
 博客：http://xujinkai.info/  
 微博：http://weibo.com/johnkale  
 知乎相关回答：https://www.zhihu.com/question/36847530/answer/92868539 快来点赞！  
+简单的问卷调查：https://www.wenjuan.com/s/R7fyEv/  
 
 
 版权 · License
@@ -114,6 +119,8 @@ OneQuick可以“执行”【"av"+数字】格式的字串。比如，按ctrl + 
 [DOCUMENT]: https://github.com/XUJINKAI/OneQuick/wiki
 [ext_rt_menu]: https://github.com/XUJINKAI/OneQuick/wiki/OneQuick.Ext.ahk#扩展屏幕右上角右键菜单
 [ext_default_editor]: https://github.com/XUJINKAI/OneQuick/wiki/OneQuick.Ext.ahk#设置默认编辑器
+[ext_ahk_code]: https://github.com/XUJINKAI/OneQuick/wiki/OneQuick.Ext.ahk#定义额外的快捷键
+[run_func]: https://github.com/XUJINKAI/OneQuick/wiki/run_function
 
 ------------------------
 ##### FROM OTHER PROJECT  
