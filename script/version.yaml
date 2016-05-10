@@ -1,6 +1,13 @@
 ﻿# can't read first line for unknown reason (maybe utf8 BOM)
 program: onequick
-version: 0.2.4
-desc-major: 无
-desc-minor: 一键安装；<br>更完善的文件结构；<br>新的更新功能；<br>强烈建议升级。
-desc-build: bug fix
+version: 0.3.0
+desc-major: 
+desc-minor: 自动联网升级，以后不用再下载压缩包；`n更多配置项放入配置文件；`n其他改进。
+desc-revision: bug fix
+update-path:
+  - script\*
+  - !script\update_list.json
+  - !script\JSON.ahk
+  - !script\Yaml.ahk
+  - lang\*
+  - README.md

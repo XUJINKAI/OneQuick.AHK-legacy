@@ -7,7 +7,7 @@
 */
 
 ; the following lines is necessary to initialize OneQuick class
-
+#SingleInstance force
 ; set workdir always be ../
 SplitPath, A_ScriptDir, , workdir
 SetWorkingDir, %workdir%
@@ -15,6 +15,8 @@ SetWorkingDir, %workdir%
 #Include, %A_ScriptDir%
 #Include, OneQuick.Core.ahk
 OneQuick.Ini()
+; 记录快捷键与对应操作
+HOTKEY_REGISTER_LIST := {}
 /*
 以下为剪贴板增强功能的定义
 定义了ctrl + shift + x/c/v 三个快捷键
@@ -34,32 +36,40 @@ sets search list, %s in each string will be replaced by the content
 if(OneQuick.GetFeatureCfg("clipboard.switch", 0))
 {
 	; 快捷键设置
-	xClipboard.SetHotkey("^+x", "^+c", "^+v")
+	; xClipboard.SetHotkey("^+x", "^+c", "^+v")
+	For key, value in OneQuick.GetFeatureCfg("clipboard.hotkey", {})
+		register_hotkey(key, value, "")
 	; 浏览器
-	xClipboard_browser_obj := { default: [1,"Default",""]
-		,edge: [2,"Edge","microsoft-edge:"]
-		,chrome: [3,"Chrome","chrome.exe"]
-		,ie: [4,"IE","iexplore.exe"]}
-	xClipboard_browser_setting := OneQuick.GetFeatureCfg("clipboard.browser", "Default, Edge, Chrome, IE")
-	xClipboard.SetBrowserList(list_filter(xClipboard_browser_obj, xClipboard_browser_setting))
+	xClipboard_browser := OneQuick.GetFeatureCfg("clipboard.browser", "Default")
+	xClipboard_browser_list := OneQuick.GetFeatureCfg("clipboard.browser_list", {})
+	xClipboard_browser_obj := []
+	browser_arr := StrSplit(xClipboard_browser, ",", " ")
+	Loop, % browser_arr.MaxIndex()
+	{
+		key := browser_arr[A_Index]
+		val := xClipboard_browser_list[key]
+		xClipboard_browser_obj.push([A_Index, key, val])
+	}
+	xClipboard.SetBrowserList(xClipboard_browser_obj)
 	; 快速搜索列表
-	xClipboard_search_obj := { google: ["g","Google","https://www.google.com/search?q=%s"]
-		,baidu: ["b","百度","http://www.baidu.com/s?wd=%s"]
-		,baidu_local: ["","百度local","http://www.baidu.com/s?wd=%s&tn=baidulocal"]
-		,weibo: ["w","微博","http://s.weibo.com/weibo/%s"]
-		,zhihu: ["z","知乎","http://www.zhihu.com/search?q=%s"]
-		,guokr: ["k","果壳","http://www.guokr.com/search/all/?wd=%s"]
-		,bilibili: ["l","哔哩哔哩","http://www.bilibili.com/search?keyword=%s"]
-		,Acfun: ["a","Acfun","http://www.acfun.tv/search/#query=%s"]
-		,Youtube: ["y","Youtube","https://www.youtube.com/results?search_query=%s"]
-		,netease_music: ["","网易云音乐","http://music.163.com/#/search/m/?s=%s&type=1"]
-		,douban_movie: ["m","豆瓣电影","http://movie.douban.com/subject_search?search_text=%s"]
-		,QR_code: ["q","QR-Code","http://api.qrserver.com/v1/create-qr-code/?data=%s"] }
-	xClipboard_search_setting := OneQuick.GetFeatureCfg("clipboard.search", "google, baidu, baidu_local, weibo, zhihu, guokr, bilibili, acfun, youtube, netease_music, douban_movie, qr_code")
-	xClipboard.SetSearchList(list_filter(xClipboard_search_obj, xClipboard_search_setting))
-	; set default list
-	OneQuick.SetSetting("clipboard.browser_default", obj_key_list(xClipboard_browser_obj))
-	OneQuick.SetSetting("clipboard.search_default", obj_key_list(xClipboard_search_obj))
+	xClipboard_search := OneQuick.GetFeatureCfg("clipboard.search", "Google")
+	xClipboard_search_list := OneQuick.GetFeatureCfg("clipboard.search_list", {})
+	xClipboard_search_obj := []
+	search_arr := StrSplit(xClipboard_search, ",", " ")
+	Loop, % search_arr.MaxIndex()
+	{
+		str := search_arr[A_Index]
+		str_arr := StrSplit(str, "/")
+		key := str_arr[1]
+		hk := str_arr[2]
+		name := str_arr[3]
+		if(name="") {
+			name := key
+		}
+		val := xClipboard_search_list[key]
+		xClipboard_search_obj.push([hk, name, val])
+	}
+	xClipboard.SetSearchList(xClipboard_search_obj)
 }
 
 /*
@@ -128,8 +138,6 @@ xmenu_show_screen_rt_menu()
 以下是快捷键的定义
 shortcuts definitions
 */
-; 记录快捷键与对应操作
-HOTKEY_REGISTER_LIST := {}
 
 ; 把两个字符串数组交叉连接起来
 str_array_concate(arr, app, deli="")
@@ -183,6 +191,7 @@ register_hotkey(key_name, action, prefix="")
 	{
 		key := prefix_trans_keys[A_Index]
 		StringUpper, key, key
+		; m(key "//" action)
 		HOTKEY_REGISTER_LIST[key] := action
 		arr := StrSplit(key, "|")
 		if(arr[1]!="") {
@@ -242,12 +251,11 @@ SUB_HOTKEY_ZONE_ANYWAY:
 SUB_HOTKEY_ZONE_BORDER:
 border_code := Sys.Cursor.CornerPos()
 action := HOTKEY_REGISTER_LIST[border_code "|" A_ThisHotkey]
-if(action=="") {
-	run(HOTKEY_REGISTER_LIST["|" A_ThisHotkey])
+if(action="") {
+	; 鼠标移到边缘但触发普通热键时
+	action := HOTKEY_REGISTER_LIST["|" A_ThisHotkey]
 }
-else {
-	run(action)
-}
+run(action)
 Return
 
 #IF border_event_evoke()
@@ -335,28 +343,3 @@ return
 #if
 
 ; //////////////////////////////////////////////////////////////
-/*
-辅助函数
-*/
-; 从列表中把指定项过滤出来 
-list_filter(obj, fil_str){
-	fil_arr := StrSplit(fil_str, ",", " ")
-	ret := []
-	Loop, % fil_arr.MaxIndex()
-	{
-		cur := fil_arr[A_Index]
-		if(cur == "" || obj[cur]=="") {
-			Continue
-		}
-		ret.insert(obj[cur])
-	}
-	return ret
-}
-; 将key连成string
-obj_key_list(obj)
-{
-	str := ""
-	For key, val in obj
-		str .= key ", "
-	return SubStr(str, 1, StrLen(str)-2)
-}

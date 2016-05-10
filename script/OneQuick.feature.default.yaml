@@ -1,26 +1,22 @@
+﻿File-Description: 可参考\script\OneQuick.feature.default.yaml文件修改
 app_enhance: 
   chrome_scroll_tab: 1
   notepad_ctrl_w_close: 1
   sublime_file_folder: 1
-clipboard: 
-  browser: "Default, Edge, Chrome, IE"
-  browser_default: "chrome, default, edge, ie"
-  search: "google, baidu, baidu_local, weibo, zhihu, guokr, bilibili, acfun, youtube, netease_music, douban_movie, qr_code"
-  search_default: "Acfun, baidu, baidu_local, bilibili, douban_movie, google, guokr, netease_music, QR_code, weibo, Youtube, zhihu"
-  switch: 1
 hotkey: 
+  switch: 1
   buildin: 
+    win_z: xmenu_show_great_menu
     ctrl_alt_r: OneQuick.Command_run
-    ctrl_shift_alt_r: Sub_OneQuick_Reload
+    win_rclick: WinMenu.Show
     shift_wheeldown: "send {PgDn}"
     shift_wheelup: "send {PgUp}"
-    win_n: notepad
-    win_rclick: WinMenu.Show
-    win_shift_l: Sys.Power.LockAndMonitoroff
     win_t: sys.win.topmost
-    win_z: xmenu_show_great_menu
-  switch: 1
+    win_n: notepad
+    win_shift_l: Sys.Power.LockAndMonitoroff
+    ctrl_shift_alt_r: OneQuick.Reload
 screen-border: 
+  switch: 1
   action: 
     B: 
       wheelclick: "send #{tab}"
@@ -48,4 +44,33 @@ screen-border:
     T: 
       wheeldown: Sys.Win.GotoNextTab
       wheelup: Sys.Win.GotoPreTab
+clipboard: 
   switch: 1
+  hotkey: 
+    ctrl_shift_x: xClipboard.ShowAllClips
+    ctrl_shift_c: xClipboard.CopyAndShowMenu
+    ctrl_shift_v: xClipboard.ShowClipMenu
+  browser: "Default, Edge, Chrome, IE"
+  search: "Google/g, baidu/b/百度, baidu_local//百度Local, Bing, weibo/w/微博, zhihu/z/知乎, Bilibili/l/哔哩哔哩, Acfun/a, YouTube/y, netease_music//网易云音乐, douban/d/豆瓣, douban_movie/m/豆瓣电影, qr_code/q/二维码"
+  ClipsFirstShowNum: 10
+  ClipsTotalNum: 50
+  browser_list: 
+    Default: default
+    Edge: "microsoft-edge:"
+    Chrome: "chrome.exe"
+    IE: "iexplore.exe"
+  search_list: 
+    google: https://www.google.com/search?q=%s
+    baidu: http://www.baidu.com/s?wd=%s
+    baidu_local: http://www.baidu.com/s?wd=%s&tn=baidulocal
+    bing: http://www.bing.com/search?q=%s
+    qr_code: http://api.qrserver.com/v1/create-qr-code/?data=%s
+    weibo: http://s.weibo.com/weibo/%s
+    zhihu: http://www.zhihu.com/search?q=%s
+    bilibili: http://www.bilibili.com/search?keyword=%s
+    acfun: http://www.acfun.tv/search/#query=%s
+    douban: https://www.douban.com/search?q=%s
+    douban_movie: http://movie.douban.com/subject_search?search_text=%s
+    guokr: http://www.guokr.com/search/all/?wd=%s
+    netease_music: http://music.163.com/#/search/m/?s=%s&type=1
+    youtube: https://www.youtube.com/results?search_query=%s
