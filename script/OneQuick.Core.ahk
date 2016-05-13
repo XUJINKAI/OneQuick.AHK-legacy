@@ -46,11 +46,6 @@ OneQuick
 */
 class OneQuick
 {
-	; debug
-	static _DEBUG_ := false
-	static remote_branch := "master"
-	; static _DEBUG_ := true
-	; static remote_branch := "release"
 	; dir
 	static _MAIN_WORKDIR := ""
 	static _JSON_DIR := "data/"
@@ -73,7 +68,10 @@ class OneQuick
 	static icon_pause := OneQuick._ICON_DIR "4.ico"
 	static icon_suspend_pause := OneQuick._ICON_DIR "3.ico"
 	; remote file path
+	static remote_branch := "master"
 	static remote_raw := "http://raw.githubusercontent.com/XUJINKAI/OneQuick/" OneQuick.remote_branch "/"
+	static remote_releases_dir := "https://github.com/XUJINKAI/OneQuick/releases/download/"
+	static remote_update_dl_dir := OneQuick.remote_releases_dir "beta0/"
 	; github api has limit
 	; static remote_contents := "https://api.github.com/repos/XUJINKAI/OneQuick/contents/"
 	; update
@@ -120,6 +118,9 @@ class OneQuick
 		if(asLib) {
 			Return
 		}
+		; set _DEBUG_ value
+		; add show=1 to config.ini [debug] to show debug switch in menu
+		OneQuick._DEBUG_ := OneQuick.debugConfig("debug", 0)
 
 		; register onexit sub
 		OnExit, Sub_OnExit
@@ -147,10 +148,6 @@ class OneQuick
 		SetTimer, Sub_Auto_Check_update, % -OneQuick.check_update_first_after
 		; ext.ahk
 		this.Run_ext_user_ini()
-		;
-		if(OneQuick._DEBUG_ || OneQuick.remote_branch!="master") {
-			OneQuick.Generate_update_list()
-		}
 	}
 	; when start
 	Show_StartInfo()
@@ -159,6 +156,9 @@ class OneQuick
 		auto_update := OneQuick.GetConfig("auto_update")
 		from_ver := OneQuick.GetConfig("update_from_version", "")
 		msgbox_from_version := OneQuick.GetConfig("msgbox_from_version")
+		if(OneQuick._DEBUG_) {
+			msg .= "`n【DEBUG mode】"
+		}
 		if(msgbox_from_version!=from_ver) {
 			update_tip := lang("Updated to version v") OneQuick.versionObj["version"]
 			msg .= "`n" update_tip
@@ -194,7 +194,7 @@ class OneQuick
 	{
 		skip_guide := OneQuick.GetConfig("skip_guide")
 		if(OneQuick._DEBUG_) {
-			skip_guide := 0
+			; skip_guide := 0
 		}
 		if(!skip_guide) {
 			run("autohotkey.exe " OneQuick._script_DIR "user_guide.ahk")
@@ -246,6 +246,8 @@ class OneQuick
 	{
 		thisVerObj := OneQuick.versionObj
 		remoteVerObj := OneQuick.Get_Remote_versionObj()
+		this_version := thisVerObj["version"]
+		remote_version := remoteVerObj["version"]
 		if(remoteVerObj="")
 		{
 			if(show_msg&&error_msg) {
@@ -254,22 +256,25 @@ class OneQuick
 			}
 			Return
 		}
-		OneQuick.SetConfig("remote_version", remoteVerObj["version"])
+		OneQuick.SetConfig("remote_version", remote_version)
 		OneQuick.Update_Tray_Menu()
-		ver_compare := OneQuick._version_compare(thisVerObj["version"], remoteVerObj["version"])
+		ver_compare := OneQuick._version_compare(this_version, remote_version)
 		if(ver_compare>=0) {
 			if(show_msg&&error_msg) {
 				msg := lang("update_no_newer_ver")
 				if(ver_compare>0) {
 					msg .= "`n你的版本号超过了作者...(ง •̀_•́)ง "
 				}
-				msg .= "`nv" thisVerObj["version"] " -> v" remoteVerObj["version"]
+				msg .= "`nv" this_version " -> v" remote_version
 				m(msg)
 			}
 			Return
 		}
 		if(show_msg) {
 			update_msg := lang("update_msg")
+			if(OneQuick._DEBUG_) {
+				update_msg := "【DEBUG Mode】`n" update_msg
+			}
 			new_version_info := OneQuick._new_version_info(thisVerObj, remoteVerObj)
 			nv_msg := lang("new_version")
 			MsgBox, 0x1024, % OneQuick.ProgramName " " nv_msg, % update_msg "`n" new_version_info
@@ -283,32 +288,74 @@ class OneQuick
 				Return
 			}
 		}
-		; debug return
-		if(OneQuick._DEBUG_) {
-			m("OneQuick.updating, debug...return")
+		; set var
+		FormatTime, timestr,, yyyyMMddHHmmss
+		backup_dir := OneQuick._Update_bkp_DIR OneQuick._Update_bkp_folder_prefix timestr "_v" this_version "/"
+		dl_dir := OneQuick._Update_dl_DIR
+		update_background_tip := lang("update_background_tip", "Update in background") "..."
+		; 两种升级策略
+		; 1. 获取升级列表，并按列表按需下载所需文件（raw repo contents）
+		; 2. 下载压缩包
+		bool_auto_update := OneQuick._version_compare(this_version, remoteVerObj["auto-update-version"]) >= 0
+		if( ! bool_auto_update) {
+			; 由于smartscreen筛选，exe无法下载
+			; 故下载zip文件后告知用户手动解压
+			; download zip file
+			if(show_msg) {
+				d("method 2")
+				Tray.Tip(update_background_tip)
+				zip_name := "OneQuick.v" remote_version ".zip"
+				remote_zip_file := OneQuick.remote_releases_dir "v" remote_version "/" zip_name
+				ErrorLevel := File.Download(remote_zip_file, zip_name)
+				d("dl zip, error: " ErrorLevel)
+				if(ErrorLevel) {
+					if(show_msg&&error_msg) {
+						msg := lang("dl_zip_error")
+						m(msg)
+						run(OneQuick.remote_download_html)
+					}
+					Return
+				}
+				msg := lang("dl_zip_success")
+				m(msg)
+				run("explorer /select, " zip_name)
+			}
 			Return
 		}
+		d("method 1")
+		; tray tip
+		Tray.Tip(update_background_tip)
+		; start operate files
 		; future: compare file & 增量升级
 		OneQuick.Generate_update_list()
 		; clear bkp
 		OneQuick._clear_bkp_folders()
-		; set var
+		; delete dl folder
+		FileRemoveDir, % dl_dir, 1
+		d("del dl")
+		; get update list in repo
 		remote_json_str := OneQuick.Get_Remote_File(OneQuick.update_list_path)
 		obj := JSON.parse(remote_json_str)
-		FormatTime, timestr,, yyyyMMddHHmmss
-		backup_dir := OneQuick._Update_bkp_DIR OneQuick._Update_bkp_folder_prefix timestr "_v" thisVerObj["version"] "/"
-		dl_dir := OneQuick._Update_dl_DIR
+		; download
+		OneQuick._update_copy_file(obj, OneQuick.remote_raw, dl_dir)
+		d("dl raw files")
+		; update count
+		count_file_name := "v" remote_version ".txt"
+		remote_update_count_file := OneQuick.remote_update_dl_dir count_file_name
+		update_count_file := OneQuick._Update_bkp_DIR count_file_name
+		ErrorLevel := File.Download(remote_update_count_file, update_count_file)
+		d("dl count, error: " ErrorLevel)
+		FileDelete, % update_count_file
+		d("del count")
 		; backup
 		OneQuick._update_copy_file(obj, "", backup_dir)
-		; download
-		FileRemoveDir, % dl_dir, 1
-		OneQuick._update_copy_file(obj, OneQuick.remote_raw, dl_dir)
 		; Copy back
+		d("[CAUTION] DEBUG mode: source code will be changed.")
 		OneQuick._update_copy_file(obj, dl_dir, "")
 		; delete dl
 		FileRemoveDir, % dl_dir, 1
 		; reload
-		OneQuick.SetConfig("update_from_version", thisVerObj["version"])
+		OneQuick.SetConfig("update_from_version", this_version)
 		RunWait autohotkey.exe %A_ScriptFullPath%
 		; only if restart fail
 		; if reload onequick fail, will rollback
@@ -319,11 +366,22 @@ class OneQuick
 		FileRemoveDir, % backup_dir, 1
 	}
 
+	_ZIP_OneQuick_self()
+	{
+		zip_file_ne := "OneQuick.v" OneQuick.versionObj["version"]
+		FileDelete, % zip_file_ne ".exe"
+		FileDelete, % zip_file_ne ".zip"
+		rar_exe := OneQuick.versionObj["winrar-path"]
+		zip_file_list := OneQuick.versionObj["zip-path-list"]
+		cmd = %rar_exe% a %zip_file_ne%.zip %zip_file_list%
+		run(cmd)
+	}
+
 	_new_version_info(thisVerObj, remoteVerObj)
 	{
 		this_version := thisVerObj["version"]
 		remote_version := remoteVerObj["version"]
-		version_compare := this._version_first_larger(remote_version, this_version)
+		version_compare := this._version_compare(remote_version, this_version)
 		if(version_compare > 0)
 		{
 			remote_desc1 := remoteVerObj["desc-major"]
@@ -375,7 +433,7 @@ class OneQuick
 
 	_version_bigger(ver1, ver2)
 	{
-		if(this._version_first_larger(ver1, ver2) > 0) {
+		if(this._version_compare(ver1, ver2) > 0) {
 			return ver1
 		}
 		else {
@@ -456,25 +514,53 @@ class OneQuick
 	}
 
 	; update list local
+	_reGenerate_update_list()
+	{
+		obj := OneQuick.Generate_update_list()
+		m("update_list.json:`n`n" Yaml_dump(obj))
+	}
 	Generate_update_list()
 	{
 		verObj := OneQuick.versionObj
-		file_list := []
-		; adding all
-		Loop, % verObj["update-path"].()
+		obj_list := OneQuick._yaml_obj_to_list(verObj["update-path"])
+		jsonObj := OneQuick._scan_file_list_obj(obj_list)
+		; write
+		FileDelete, % OneQuick.update_list_path
+		FileAppend, % JSON.stringify(jsonObj) "`n", % OneQuick.update_list_path
+		return jsonObj
+	}
+	_yaml_obj_to_list(obj)
+	{
+		ret_list := []
+		Loop, % obj.()
 		{
-			path := verObj["update-path"].(A_Index)
+			ret_list.Insert(obj.(A_Index))
+		}
+		return ret_list
+	}
+	_scan_file_list_obj(scan_array)
+	{
+		file_list := []
+		Loop, % scan_array.MaxIndex()
+		{
+			scan_array[A_Index] := StrReplace(scan_array[A_Index], "/", "\")
+		}
+		; adding all
+		Loop, % scan_array.MaxIndex()
+		{
+			path := scan_array[A_Index]
 			if(SubStr(path, 1, 1)!="!") {
-				Loop Files, % path, F
+				para := InStr(path, "*") ? "FR" : "F"
+				Loop Files, % path, %para%
 				{
 					file_list.Insert(A_LoopFileFullPath)
 				}
 			}
 		}
 		; remove !
-		Loop, % verObj["update-path"].()
+		Loop, % scan_array.MaxIndex()
 		{
-			path := verObj["update-path"].(A_Index)
+			path := scan_array[A_Index]
 			if(SubStr(path, 1, 1)="!") {
 				path := SubStr(path, 2)
 				Loop Files, % path, FR
@@ -484,15 +570,13 @@ class OneQuick
 			}
 		}
 		; implement obj
-		jsonObj := []
+		obj := []
 		Loop, % file_list.MaxIndex()
 		{
 			item := {"name": file_list[A_Index]}
-			jsonObj.Insert(item)
+			obj.Insert(item)
 		}
-		; write
-		FileDelete, % OneQuick.update_list_path
-		FileAppend, % JSON.stringify(jsonObj) "`n", % OneQuick.update_list_path
+		return obj
 	}
 	GetBiggerRemVersion()
 	{
@@ -551,9 +635,19 @@ class OneQuick
 		return obj[cur_key]
 	}
 
+	Edit_feature_yaml()
+	{
+		if(OneQuick._DEBUG_ && this.debugConfig("load_default_feature_yaml", 0)) {
+			OneQuick.Edit(OneQuick.feature_yaml_default_file)
+		}
+		else {
+			OneQuick.Edit(OneQuick.feature_yaml_file)
+		}
+	}
+
 	LoadFeatureYaml()
 	{
-		if(this.debugConfig("load_default_feature_yaml", OneQuick._DEBUG_)) {
+		if(OneQuick._DEBUG_ && this.debugConfig("load_default_feature_yaml", 0)) {
 			OneQuick.FeatureObj := Yaml(OneQuick.feature_yaml_default_file)
 		}
 		else {
@@ -563,7 +657,6 @@ class OneQuick
 			OneQuick.FeatureObj := Yaml(OneQuick.feature_yaml_file)
 		}
 	}
-
 	; config.ini
 	debugConfig(key, default)
 	{
@@ -651,38 +744,59 @@ class OneQuick
 		else {
 			check_update_name := lang("Check Update")
 		}
+		lang := OneQuick.GetConfig("lang")
 		Menu, Tray, Tip, % this.ProgramName
-		Tray.SetMenu([[version_str, "OneQuick.About"]
+		xMenu.New("TrayLanguage"
+			,[["English", "OneQuick.SetLang", {check: lang=="en"}]
+			, ["中文", "OneQuick.SetLang", {check: lang=="cn"}]])
+		xMenu.New("TrayAdvanced"
+			,[["Suspend Hotkey", "OneQuick.SetSuspend", {check: A_IsSuspended}]
+			,["Pause Thread", "OneQuick.SetPause", {check: A_IsPaused}]
+			,[]
+			,[lang("AHK Standard Menu"), "OneQuick.Standard_Tray_Menu", {check: OneQuick._switch_tray_standard_menu}]
+			,[]
+			,[lang("Reset Program"), "OneQuick.ResetProgram"]])
+		TrayMenuList := []
+		debug_show := OneQuick.debugConfig("show", 0)
+		if(OneQuick._DEBUG_||debug_show) {
+			TrayMenuList := xArray.merge(TrayMenuList
+				,[["DEBUG Mode: " (OneQuick._DEBUG_?"ON":"OFF"), "OneQuick.debug_mode"],[]])
+		}
+		if(OneQuick._DEBUG_) {
+			TrayMenuList := xArray.merge(TrayMenuList
+				,[["ZIP files", "OneQuick._ZIP_OneQuick_self"]
+				,["Generate_update_list.json", "OneQuick._reGenerate_update_list"]
+				,["Count_Download_Online", "OneQuick._SumGithubDownloadCount"]
+				,[]
+				,["config.ini", "notepad " OneQuick.config_file]
+				,["core.ahk", "edit: script/OneQuick.Core.ahk"]
+				,["version.yaml", "edit:" OneQuick.version_yaml_file]
+				,[]])
+		}
+		TrayMenuList := xArray.merge(TrayMenuList
+			,[[version_str, "OneQuick.About"]
 			,[lang("help_online"), OneQuick.remote_help]
 			,[check_update_name, "OneQuick.Check_update"]
 			,[]
 			,[lang("Autorun"), "OneQuick.SetAutorun", {check: autorun}]
 			,[lang("AutoUpdate"), "OneQuick.SetAutoUpdate", {check: autoupdate}]
-			,["Language", [["English", "OneQuick.SetLang"], ["中文", "OneQuick.SetLang"]] ]
+			,["Language",, {"sub": "TrayLanguage"}]
+			,[lang("Advanced"),, {"sub": "TrayAdvanced"}]
 			,[]
-			,[lang("Disable"), "OneQuick.SetDisable"]
-			,[lang("Suspend Hotkey"), "OneQuick.SetSuspend"]
-			,[lang("Pause Thread"), "OneQuick.SetPause"]
+			,[lang("Disable"), "OneQuick.SetDisable", {check: A_IsPaused&&A_IsSuspended}]
 			,[lang("Reload"), "OneQuick.Reload"]
 			,[lang("Exit"), "OneQuick.Exit"]
 			,[]
-			,[lang("AHK Standard Menu"), "OneQuick.Standard_Tray_Menu"]
 			,[lang("Open AutoHotkey.exe Folder"), "Sub_OneQuick_EXE_Loc"]
 			,[lang("AutoHotKey Help"), "Sub_OneQuick_AHKHelp"]
 			,[]
 			,[lang("Open OneQuick Folder"), A_WorkingDir]
-			,[lang("Edit Ext.ahk"), "Sub_OneQuick_EditExtFile"]
-			,[lang("Edit feature.yaml"), "Sub_OneQuick_EditFeature"] ]
-				, OneQuick._switch_tray_standard_menu)
-		if(OneQuick._switch_tray_standard_menu) {
-			Menu, Tray, Check, % lang("AHK Standard Menu")
-		}
-		Else {
-			Menu, Tray, UnCheck, % lang("AHK Standard Menu")
-		}
+			,[lang("Edit Ext.ahk"), "edit:" OneQuick.Ext_ahk_file]
+			,[lang("Edit feature.yaml"), "OneQuick.Edit_feature_yaml"] ])
+		Tray.SetMenu(TrayMenuList, OneQuick._switch_tray_standard_menu)
 		Menu, Tray, Default, % lang("Disable")
 		Menu, Tray, Click, 1
-		OneQuick.SetState()
+		OneQuick.Update_Icon()
 	}
 	static _switch_tray_standard_menu := 0
 	Standard_Tray_Menu(act="toggle")
@@ -690,13 +804,10 @@ class OneQuick
 		OneQuick._switch_tray_standard_menu := (act="toggle")? !OneQuick._switch_tray_standard_menu :act
 		OneQuick.Update_Tray_Menu()
 	}
-	SetState(setsuspend="", setpause="")
+	Update_Icon()
 	{
-		setsuspend := (setsuspend="")? A_IsSuspended: setsuspend
-		setpause := (setpause="")? A_IsPaused: setpause
-		Menu, Tray, UnCheck, % lang("Disable")
-		Menu, Tray, UnCheck, % lang("Suspend Hotkey")
-		Menu, Tray, UnCheck, % lang("Pause Thread")
+		setsuspend := A_IsSuspended
+		setpause := A_IsPaused
 		if !setpause && !setsuspend {
 			this.SetIcon(this.icon_default)
 		}
@@ -707,9 +818,13 @@ class OneQuick
 			this.SetIcon(this.icon_suspend)
 		}
 		Else if setpause && setsuspend {
-			Menu, Tray, Check, % lang("Disable")
 			this.SetIcon(this.icon_suspend_pause)
 		}
+	}
+	SetState(setsuspend="", setpause="")
+	{
+		setsuspend := (setsuspend="")? A_IsSuspended: setsuspend
+		setpause := (setpause="")? A_IsPaused: setpause
 		if(!A_IsSuspended && setsuspend) {
 			RunArr(OneQuick.OnSuspendCmd)
 		}
@@ -717,23 +832,23 @@ class OneQuick
 			RunArr(OneQuick.OnPauseCmd)
 		}
 		if(setsuspend) {
-			Menu, Tray, Check, % lang("Suspend Hotkey")
 			Suspend, On
 		}
 		else {
 			Suspend, Off
 		}
 		if(setpause) {
-			Menu, Tray, Check, % lang("Pause Thread")
 			Pause, On, 1
 		}
 		else {
 			Pause, Off
 		}
+		OneQuick.Update_Tray_Menu()
 	}
 	;
 	About()
 	{
+		lang := OneQuick.GetConfig("lang", "cn")
 		Gui, OneQuick_About: New
 		Gui OneQuick_About:+Resize +AlwaysOnTop +MinSize400 -MaximizeBox -MinimizeBox
 		Gui, Font, s12
@@ -745,24 +860,57 @@ class OneQuick
 		Gui, Add, Link,, % s
 		s := "Author: XJK <a href=""mailto:jack8461@msn.cn"">jack8461@msn.cn</a>"
 		Gui, Add, Link,, % s
+		dnt := lang="cn" ? "捐赠" : "Donate!"
+		s := "<a href=""http://xujinkai.github.io/my/donate/"">" dnt "</a>"
+		s .= " <a href=""https://www.zhihu.com/question/36847530/answer/92868539"">去知乎点赞!</a>"
+		Gui, Add, Link,, % s
 		Gui, Add, Text
 		Gui, Add, Button, Default gSub_Close_OneQuick_About, Close
 		GuiControl, Focus, Close
 		Gui, Show,, About OneQuick
 	}
+	; OneQuick._SumGithubDownloadCount
+	_SumGithubDownloadCount()
+	{
+		json_str := http.get("https://api.github.com/repos/XUJINKAI/OneQuick/releases")
+		obj := JSON.Parse(json_str)
+		sum := 0
+		msg := ""
+		Loop, % obj.MaxIndex()
+		{
+			rel := obj[A_Index]
+			tag_name := rel["tag_name"]
+			assets := rel["assets"]
+			msg .= "`n" tag_name ":"
+			Loop, % assets.MaxIndex()
+			{
+				file := assets[A_Index]
+				name := file["name"]
+				dlcount := file["download_count"]
+				sum += dlcount
+				msg .= "`n  " name ": " dlcount
+			}
+		}
+		msg := "github download sum: " sum msg
+		m(msg)
+	}
 	Reload()
 	{
 		Reload
 	}
+	ResetProgram()
+	{
+		lang := OneQuick.GetConfig("lang")
+		msg := lang="cn" ? "重置会删除config.ini, OneQuick.feature.yaml并重启OneQuick." : "Reset program will delete config.ini, OneQuick.feature.yaml,`nAnd reload OneQuick."
+		if(mq(msg, 0x1124)) {
+			FileDelete, config.ini
+			FileDelete, OneQuick.feature.yaml
+			OneQuick.Reload()
+		}
+	}
 	Exit(show_msg=true)
 	{
-		if(show_msg) {
-			exit_msg := lang("exit_msg")
-			msgbox, 0x40034, % OneQuick.ProgramName, % exit_msg
-			IfMsgBox Yes
-				ExitApp
-		}
-		else {
+		if(mq(lang("exit_msg"), 0x1134)) {
 			ExitApp
 		}
 	}
@@ -815,6 +963,13 @@ class OneQuick
 		{
 			Menu, Tray, UnCheck, % lang("AutoUpdate")
 		}
+	}
+
+	debug_mode(act="toggle")
+	{
+		debug := (act="toggle") ? !OneQuick._DEBUG_ :act
+		OneQuick.SetConfig("debug", debug, "debug")
+		OneQuick.Reload()
 	}
 
 	SetLang(act="itemname")
@@ -870,20 +1025,6 @@ Sub_OneQuick_EXE_Loc:
 splitpath, a_ahkpath, , dir
 run(dir)
 Return
-
-Sub_OneQuick_EditExtFile:
-OneQuick.Edit(OneQuick.Ext_ahk_file)
-Return
-
-Sub_OneQuick_EditFeature:
-if(OneQuick.debugConfig("load_default_feature_yaml", OneQuick._DEBUG_)) {
-	OneQuick.Edit(OneQuick.feature_yaml_default_file)
-}
-else {
-	OneQuick.Edit(OneQuick.feature_yaml_file)
-}
-Return
-
 
 ; //////////////////////////////////////////////////////////////////////////
 ; //////////////////////////////////////////////////////////////////////////
@@ -970,6 +1111,7 @@ class File
 		FileCreateDir, % path
 	}
 
+	; File.Download
 	Download(url, path)
 	{
 		SplitPath, % path, , OutDir
@@ -1621,6 +1763,12 @@ class xMenu
 			Menu, %Menu_Name%, Show
 		Else
 			Menu, %Menu_Name%, Show, % X, % Y
+	}
+
+	New(Menu_Name, Menu_Config)
+	{
+		this.Clear(Menu_Name)
+		this.Add(Menu_Name, Menu_Config)
 	}
 
 	Clear(Menu_Name)
@@ -2418,6 +2566,13 @@ StrPutVar(Str, ByRef Var, Enc = "")
 }
 
 ; ///////////////////////////////////////////////////////////////////////////
+d(str := "")
+{
+	if(OneQuick._DEBUG_)
+	{
+		m("[DEBUG]: " str)
+	}
+}
 
 m(str := "")
 {
@@ -2425,6 +2580,15 @@ m(str := "")
 		str := "[Object]`n" Yaml_dump(str)
 	}
 	MsgBox, , % OneQuick.ProgramName, % str
+}
+
+mq(msg:="", opt:=0x1024, title:="")
+{
+	title := title="" ? OneQuick.ProgramName : title
+	MsgBox, % opt, % title, % msg
+	IfMsgBox YES
+		return True
+	return False
 }
 
 t(str := "")
@@ -2495,6 +2659,11 @@ run(command, throwErr := 1)
 		else if(RegExMatch(command, "i)m:(.*)", msg))
 		{
 			m(msg1)
+			return
+		}
+		else if(RegExMatch(command, "i)edit:\s*(.*)", f))
+		{
+			OneQuick.Edit(f1)
 			return
 		}
 		Try

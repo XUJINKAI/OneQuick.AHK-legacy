@@ -1,9 +1,13 @@
 ﻿# can't read first line for unknown reason (maybe utf8 BOM)
-program: onequick
-version: 0.3.0
+memo-for-author: "1.this version file; 2.upload count file; 3.generate update_list.json; 4.tag version -> push commit -> zip files -> upload release;"
+program: OneQuick
+version: 0.3.1
 desc-major: 
 desc-minor: 自动联网升级，以后不用再下载压缩包；`n更多配置项放入配置文件；`n其他改进。
-desc-revision: bug fix
+desc-revision: 完善自动升级和托盘菜单
+auto-update-version: 0.3.0
+winrar-path: "C:\\Program Files\\WinRAR\\WinRAR.exe"
+zip-path-list: "AHK icon script lang \"OneQuick Launcher.exe\" README.md 安装说明.txt"
 update-path:
   - script\*
   - !script\update_list.json
@@ -11,3 +15,4 @@ update-path:
   - !script\Yaml.ahk
   - lang\*
   - README.md
+  - 安装说明.txt

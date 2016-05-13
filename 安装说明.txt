@@ -1,0 +1,12 @@
+*********************
+OneQuick
+XJK：https://github.com/XUJINKAI/OneQuick
+*********************
+
+运行OneQuick Launcher.exe即可。
+功能列表请右击托盘图标打开在线帮助查看。或用记事本打开README.md查看。
+
+注：
+1. 若电脑没安装autohotkey，会先安装再运行，此过程全自动无需再做操作。
+2. 若电脑已经安装autohotkey，则会启动OneQuick。
+   已安装autohotkey的电脑，第一次使用的话建议运行一次AHK文件夹下的EnableUIAccess2AHK.ahk，否则OneQuick可能对某些高权限应用无效（如任务管理器）。
