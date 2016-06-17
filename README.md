@@ -103,11 +103,11 @@ Q&A
 
 关于
 ------------------------
-博客：http://xujinkai.info/  
+博客：http://xujinkai.net/  
 微博：http://weibo.com/johnkale  
 知乎相关回答：https://www.zhihu.com/question/36847530/answer/92868539 快来点赞！  
 简单的问卷调查：https://www.wenjuan.com/s/R7fyEv/  
-捐赠：http://xujinkai.info/my/donate/
+捐赠：http://xujinkai.net/my/donate/  
 
 版权 · License
 ------------------------
