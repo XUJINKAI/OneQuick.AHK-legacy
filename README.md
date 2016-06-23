@@ -100,6 +100,8 @@ Q&A
 - #### 剪贴板只能保存文本记录？  
     是的，OneQuick的剪贴板记录暂不支持图片等内容。不过，只要不利用OneQuick的剪贴板记录切换内容，系统剪贴板就不会受到影响。
 
+- #### 卸载Autohotkey提示无权限？
+    可以运行AHK/AutoHotkey_Install.exe选择uninstall卸载。
 
 关于
 ------------------------
