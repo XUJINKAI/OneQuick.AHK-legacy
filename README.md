@@ -1,5 +1,6 @@
 OneQuick
 ========================
+
 OneQuick 是一款基于autohotkey的windows快捷工具。  
 独创的屏幕边缘操作、文本快速搜索功能；还有剪贴板历史纪录、窗口操作菜单等一系列实用功能，操作windows也能如此爽快。  
 OneQuick也为扩展代码留下了足够的空间，你可以基于OneQuick提供的大量函数开发自己的ahk脚本。
@@ -7,6 +8,9 @@ OneQuick也为扩展代码留下了足够的空间，你可以基于OneQuick提�
 OneQuick is an Autohotkey script, it is both a convenient tool and an ahk library.  
 It provides clipboard manager, screen border operation, window operation, quick menu, etc.  
 It's also a useful library to write your own ahk code.  
+
+例：快速调整音量  
+![screenLT](http://i.imgur.com/mKVXXmU.gif)
 
 
 安装
