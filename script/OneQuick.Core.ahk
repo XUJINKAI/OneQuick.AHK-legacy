@@ -124,8 +124,6 @@ class OneQuick
 
 		; register onexit sub
 		OnExit, Sub_OnExit
-		; save user data when exit
-		this.OnExit("OneQuick.SaveUserData")
 
 		; setting
 		this.LoadFeatureYaml()
@@ -995,6 +993,7 @@ Return
 
 Sub_OnExit:
 RunArr(OneQuick.OnExitCmd)
+OneQuick.SaveUserData()
 ExitApp
 
 ; --------------------------
