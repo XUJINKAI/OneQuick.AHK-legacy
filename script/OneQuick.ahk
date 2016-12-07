@@ -335,7 +335,7 @@ win + E: (when sublime active) open current edit file folder
 #if SETTING_REM["sublime_file_folder"]
 #e::
 title := Sys.Win.Title()
-if(RegExMatch(title, "^(.*)\\.*- Sublime Text", t))
+if(RegExMatch(title, "^(.*)\\.*- Sublime Text( \(UNREGISTERED\))?", t))
 	run(t1)
 Else
 	run("explorer")
