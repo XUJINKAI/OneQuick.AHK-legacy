@@ -107,13 +107,9 @@ Q&A
 - #### 卸载Autohotkey提示无权限？
     可以运行AHK/AutoHotkey_Install.exe选择uninstall卸载。
 
-关于
+联系
 ------------------------
-博客：http://xujinkai.net/  
-微博：http://weibo.com/johnkale  
-知乎相关回答：https://www.zhihu.com/question/36847530/answer/92868539 快来点赞！  
-简单的问卷调查：https://www.wenjuan.com/s/R7fyEv/  
-捐赠：http://xujinkai.net/my/donate/  
+作者：http://xujinkai.net/  
 
 版权 · License
 ------------------------
