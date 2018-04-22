@@ -1,4 +1,4 @@
-OneQuick
+OneQuick WPF版已发布！并上架微软应用商店。
 ========================
 
 OneQuick 是一款基于autohotkey的windows快捷工具。  
