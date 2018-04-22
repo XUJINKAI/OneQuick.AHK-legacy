@@ -1,6 +1,9 @@
 OneQuick WPF版已发布！并上架微软应用商店。
 ========================
 
+官网：[http://onequick.org/](http://onequick.org/?f=gh_ahk)
+========================
+
 OneQuick 是一款基于autohotkey的windows快捷工具。  
 独创的屏幕边缘操作、文本快速搜索功能；还有剪贴板历史纪录、窗口操作菜单等一系列实用功能，操作windows也能如此爽快。  
 OneQuick也为扩展代码留下了足够的空间，你可以基于OneQuick提供的大量函数开发自己的ahk脚本。
