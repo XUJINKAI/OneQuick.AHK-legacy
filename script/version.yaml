@@ -2,7 +2,7 @@
 memo-for-author: "1.this version file; 2.upload count file; 3.generate update_list.json; 4.tag version -> push commit -> zip files -> upload release;"
 program: OneQuick
 version: 1.0.0
-desc-major: WPF版已正式发布！请前往官网升级！
+desc-major: WPF版已正式发布！同时上架微软应用商店！`n请前往官网OneQuick.org重新下载，或在应用商店搜索OneQuick。`nAHK版已停止更新。
 desc-minor: 自动联网升级，以后不用再下载压缩包；`n更多配置项放入配置文件；`n其他改进。
 desc-revision: 完善自动升级和托盘菜单
 auto-update-version: 0.3.0
