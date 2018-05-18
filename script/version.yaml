@@ -1,10 +1,10 @@
 ﻿# can't read first line for unknown reason (maybe utf8 BOM)
 memo-for-author: "1.this version file; 2.upload count file; 3.generate update_list.json; 4.tag version -> push commit -> zip files -> upload release;"
 program: OneQuick
-version: 1.0.0
-desc-major: WPF版已正式发布！同时上架微软应用商店！`n请前往官网OneQuick.org重新下载，或在应用商店搜索OneQuick。`nAHK版已停止更新。
-desc-minor: 自动联网升级，以后不用再下载压缩包；`n更多配置项放入配置文件；`n其他改进。
-desc-revision: 完善自动升级和托盘菜单
+version: 1.2.4
+desc-major: Pro版功能正在微软应用商店【限免】中！`n请前往官网OneQuick.org，或在微软应用商店搜索OneQuick。`n【AHK版已停止更新】
+desc-minor: Pro版功能正在微软应用商店【限免】中！`n请前往官网OneQuick.org，或在微软应用商店搜索OneQuick。`n【AHK版已停止更新】
+desc-revision: Pro版功能正在微软应用商店【限免】中！`n请前往官网OneQuick.org，或在微软应用商店搜索OneQuick。`n【AHK版已停止更新】
 auto-update-version: 0.3.0
 winrar-path: "C:\\Program Files\\WinRAR\\WinRAR.exe"
 zip-path-list: "AHK icon script lang \"OneQuick Launcher.exe\" README.md 安装说明.txt"
