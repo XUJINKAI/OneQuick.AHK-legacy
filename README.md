@@ -1,4 +1,4 @@
-OneQuick WPF版已发布！并上架微软应用商店。
+新版已上架微软应用商店，此版停止更新支持。
 ========================
 
 官网：[http://onequick.org/](http://onequick.org/?f=gh_ahk)
